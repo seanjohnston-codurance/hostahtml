@@ -1,6 +1,6 @@
 # 05 — Update CLAUDE.md to reflect the new state
 
-Status: needs-info
+Status: done
 
 Depends on: issues 01–04 must land first. This is intentionally last so the conventions captured reflect what was actually built.
 
