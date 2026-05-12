@@ -1,0 +1,3 @@
+[     741ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://accounts.google.com/gsi/button?theme=outline&size=large&is_fedcm_supported=true&client_id=undefined&iframe_id=gsi_648540_908298&cas=C0XWQD9NG%2BU4MGnGK1JJ9D3VgCaH7F6MJRCo8RHlZsw:0
+[     985ms] [ERROR] [GSI_LOGGER]: The given client ID is not found. @ https://ssl.gstatic.com/_/gsi/_/js/k=gsi.gsi.en_GB.uMRU64GU-JU.O/am=AAAAIEEAWyAQ/d=1/rs=AF0KOtXV9s3UqTMhSvmj3iCa-omIYJbT0g/m=credential_button_library:85
+[    1064ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:5174/favicon.ico:0
