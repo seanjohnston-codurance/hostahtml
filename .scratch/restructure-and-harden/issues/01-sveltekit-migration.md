@@ -1,6 +1,6 @@
 # 01 — SvelteKit migration + component split
 
-Status: ready-for-agent
+Status: done
 
 ## Motivation
 

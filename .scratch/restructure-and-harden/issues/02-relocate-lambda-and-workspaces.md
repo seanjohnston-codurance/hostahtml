@@ -1,6 +1,6 @@
 # 02 — npm workspaces + relocate Lambda (no behaviour change)
 
-Status: ready-for-agent
+Status: done
 
 Depends on: nothing (independent of issue 01).
 Blocks: issue 03 (api hardening lands in the new location).

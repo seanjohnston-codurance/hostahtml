@@ -19,13 +19,25 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-          cache-dependency-path: |
-            infra/package-lock.json
-            frontend/package-lock.json
+          cache-dependency-path: package-lock.json
 
-      - name: Install infra dependencies
+      - name: Install dependencies
         run: npm ci
-        working-directory: infra
+
+      - name: Test api
+        run: npm run test -w api
+
+      - name: Check api
+        run: npm run check -w api
+
+      - name: Test frontend
+        run: npm run test -w frontend
+
+      - name: Check frontend
+        env:
+          PUBLIC_API_URL: https://example.com
+          PUBLIC_GOOGLE_CLIENT_ID: dummy.apps.googleusercontent.com
+        run: npm run check -w frontend
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -44,16 +56,11 @@ jobs:
           echo "FRONTEND_BUCKET=$(jq -r '.HostahtmlStack.FrontendBucketName' /tmp/cdk-outputs.json)" >> "$GITHUB_ENV"
           echo "DISTRIBUTION_ID=$(jq -r '.HostahtmlStack.DistributionId' /tmp/cdk-outputs.json)" >> "$GITHUB_ENV"
 
-      - name: Install frontend dependencies
-        run: npm ci
-        working-directory: frontend
-
       - name: Build frontend
         env:
-          VITE_API_URL: ${{ env.API_URL }}
-          VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-        run: npm run build
-        working-directory: frontend
+          PUBLIC_API_URL: ${{ env.API_URL }}
+          PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        run: npm run build -w frontend
 
       - name: Sync frontend to S3
         run: aws s3 sync frontend/dist/ "s3://$FRONTEND_BUCKET/" --delete

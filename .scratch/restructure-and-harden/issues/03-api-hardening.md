@@ -1,6 +1,6 @@
 # 03 — API refactor + hardening (TDD)
 
-Status: ready-for-agent
+Status: done
 
 Depends on: issue 02 (relocation must have landed).
 

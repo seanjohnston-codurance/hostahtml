@@ -8,6 +8,11 @@ Internal Codurance tool for sharing HTML files. Workspaces:
 
 Use `npm` workspaces. Run commands from the workspace root unless noted.
 
+## Agent workflow
+
+- **TDD:** Use `/tdd` for feature work and bug fixes unless the user says otherwise. Follow red → green → refactor and vertical slices; match the Testing sections below for each workspace.
+- **MCP:** Prefer enabled MCP servers when they apply. For Svelte, SvelteKit, or frontend behaviour, use the **Svelte MCP** server: read each tool’s schema before calling, and use it to confirm docs and fixes after substantive Svelte changes when that server’s instructions say to.
+
 ## Frontend (`frontend/`)
 
 - **Svelte 5** with runes only. `$state`, `$props`, `$effect`. Never `export let`.
@@ -35,7 +40,7 @@ Vitest + `@testing-library/svelte` v5 + jsdom. Red → green → refactor. `Foo.
 Vitest, red-first. Mock S3 + `google-auth-library` at the module boundary. `Foo.ts` ↔ `Foo.test.ts`.
 
 ### Commands
-- `npm run test -w api`
+- `npm run test|check -w api`
 
 ## Shared (`shared/`)
 
@@ -48,7 +53,7 @@ Vitest, red-first. Mock S3 + `google-auth-library` at the module boundary. `Foo.
 - Bucket has a 7-day lifecycle rule matching the presigned URL expiry (ADR-0003).
 - API Gateway HTTP API v2 has stage-level route throttle (5 req/s sustained, 10 burst). Per-user limits deferred (ADR-0002).
 - CloudFront maps 403/404 to `/200.html`; this must match the SvelteKit adapter-static fallback.
-- Lambda entry: `../api/src/handler.ts`. Env: `BUCKET_NAME`, `GOOGLE_CLIENT_ID`.
+- Lambda entry: `../api/src/handler.ts`. Env: `BUCKET_NAME`, `GOOGLE_CLIENT_ID`, optional `STRICT_HTML_SNIFF`. Google identity must be Codurance (`hd` or `@codurance.com` email); see `api/src/orgPolicy.ts`. Frontend GSI passes `hd` (same domain) in `+page.svelte`.
 
 ### Commands
 - `cd infra && npx cdk diff` / `cdk deploy`

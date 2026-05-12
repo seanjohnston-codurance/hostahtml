@@ -1,6 +1,6 @@
 # 04 — Infra: S3 lifecycle + API Gateway throttle + fallback routing
 
-Status: ready-for-agent
+Status: done
 
 Depends on: nothing (independent of issues 01–03).
 

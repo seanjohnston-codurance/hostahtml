@@ -1,0 +1,1 @@
+export const env={"PUBLIC_GOOGLE_CLIENT_ID":"y.apps.googleusercontent.com","PUBLIC_API_URL":"http://x"}

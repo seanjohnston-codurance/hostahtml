@@ -1,0 +1,21 @@
+{
+  "name": "hostahtml-api",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.0.0",
+    "@aws-sdk/s3-request-presigner": "^3.0.0",
+    "@hostahtml/shared": "*",
+    "google-auth-library": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

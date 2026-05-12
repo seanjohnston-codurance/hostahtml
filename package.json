@@ -1,0 +1,5 @@
+{
+  "name": "hostahtml",
+  "private": true,
+  "workspaces": ["frontend", "api", "shared", "infra"]
+}

@@ -41,3 +41,4 @@ Constraints that matter for this decision:
 
 - ADR-0002 (rate limits)
 - ADR-0004 (workspace layout)
+- ADR-0005 (app-level share tokens; phased migration from client-visible presigned URLs)

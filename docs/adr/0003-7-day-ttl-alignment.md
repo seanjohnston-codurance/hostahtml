@@ -33,6 +33,10 @@ Changing the policy means updating all three references in the same change. A sh
 - Changing the policy still requires touching the Lambda response/signing code and the CDK lifecycle rule together.
 - S3 lifecycle expiration is eventually consistent within ~48 h; a file may live up to two days past its URL expiry. Acceptable — the URL is already dead, so the file is invisible regardless.
 
+## See also
+
+- ADR-0005 (app-level share tokens; token TTL stays aligned with this ADR’s 7-day policy)
+
 ## Reconsider if
 
 - The product requires differentiated TTLs (e.g. paid tier with 30-day links, free with 7).
