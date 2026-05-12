@@ -1,0 +1,5 @@
+[env]
+AWS_PROFILE = "hostahtml"
+GOOGLE_CLIENT_ID = "381362730003-92cflufk1gn78o1ir41t9i2tt97dd26q.apps.googleusercontent.com"
+VITE_API_URL = "https://soasgr8rh7.execute-api.eu-west-1.amazonaws.com"
+VITE_GOOGLE_CLIENT_ID = "381362730003-92cflufk1gn78o1ir41t9i2tt97dd26q.apps.googleusercontent.com"
