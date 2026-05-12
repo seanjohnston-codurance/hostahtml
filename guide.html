@@ -596,9 +596,13 @@ cdk --version    # 2.x.x</code></pre></div>
       }
     },
     {
-      "Sid": "CDKBootstrapLookup",
+      "Sid": "CDKBootstrapSSM",
       "Effect": "Allow",
-      "Action": "ssm:GetParameter",
+      "Action": [
+        "ssm:GetParameter",
+        "ssm:PutParameter",
+        "ssm:DeleteParameter"
+      ],
       "Resource": "arn:aws:ssm:*:*:parameter/cdk-bootstrap/*"
     },
     {
@@ -670,6 +674,14 @@ cdk --version    # 2.x.x</code></pre></div>
           <div class="step-title">Verify it works</div>
           <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>aws sts get-caller-identity --profile hostahtml</code></pre></div>
           <p class="step-desc">You should see the UK Playground account ID and an ARN ending in <code>user/hostahtml</code>. If you get an error, double-check the keys were copied correctly.</p>
+          <div class="callout info">
+            <strong>💡 Skip --profile on every command</strong>
+            Both <code>aws</code> and <code>cdk</code> respect the <code>AWS_PROFILE</code> environment variable. Use <strong>direnv</strong> to set it automatically whenever you're in this directory:
+            <div class="code-wrap" style="margin-top:8px;"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>brew install direnv
+echo 'export AWS_PROFILE=hostahtml' > .envrc
+direnv allow</code></pre></div>
+            Add <code>direnv hook bash | source</code> (or the fish/zsh equivalent) to your shell config. After that, <code>cdk deploy</code> and <code>aws s3 ls</code> work without any <code>--profile</code> flag. The <code>.envrc</code> file is gitignored — each developer sets their own.
+          </div>
         </div>
       </div>
     </section>
@@ -830,7 +842,9 @@ HostahtmlStack.DeployRoleArn = arn:aws:iam::123456789012:role/HostahtmlStack-...
         <input type="checkbox" id="cb-s5-upload">
         <div class="step-body">
           <div class="step-title">Test the uploader</div>
-          <p class="step-desc">Open <code>app.html</code> in your browser. Paste your <code>ApiUrl</code> into the API URL field at the top and click Save. Then drag an HTML file onto the drop zone.</p>
+          <p class="step-desc">Serve <code>app.html</code> via a local HTTP server — opening it directly from the filesystem causes browsers to send <code>Origin: null</code> which some CORS implementations reject.</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>npx http-server . -p 8080 -c-1</code></pre></div>
+          <p class="step-desc">Then open <a href="http://localhost:8080/app.html" target="_blank">http://localhost:8080/app.html</a> in your browser. Paste your <code>ApiUrl</code> into the config field at the top and click Save. Then drag an HTML file onto the drop zone.</p>
           <div class="callout info">
             <strong>💡 Need a test file?</strong>
             <div class="code-wrap" style="margin-top: 8px;"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>echo "&lt;h1&gt;Hello from hostahtml!&lt;/h1&gt;" > test.html</code></pre></div>
