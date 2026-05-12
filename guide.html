@@ -661,7 +661,7 @@ cdk --version    # 2.x.x</code></pre></div>
           <ul>
             <li><strong>AWS Access Key ID:</strong> the key ID you just copied</li>
             <li><strong>AWS Secret Access Key:</strong> the secret you just copied</li>
-            <li><strong>Default region name:</strong> <code>eu-west-2</code> (or your region)</li>
+            <li><strong>Default region name:</strong> <code>eu-west-1</code> (or your region)</li>
             <li><strong>Default output format:</strong> <code>json</code></li>
           </ul>
         </div>
@@ -780,9 +780,9 @@ aws configure get region --profile hostahtml</code></pre></div>
         <input type="checkbox" id="cb-s4-bootstrap">
         <div class="step-body">
           <div class="step-title">Run bootstrap</div>
-          <p class="step-desc">Replace <code>123456789012</code> with your account ID and <code>eu-west-2</code> with your region:</p>
+          <p class="step-desc">Replace <code>123456789012</code> with your account ID and <code>eu-west-1</code> with your region:</p>
           <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>cd infra
-cdk bootstrap aws://123456789012/eu-west-2 --profile hostahtml</code></pre></div>
+cdk bootstrap aws://123456789012/eu-west-1 --profile hostahtml</code></pre></div>
           <p class="step-desc">Takes about 2 minutes. You'll see <code>✅  Environment aws://...</code> when it's done. You never need to run this again for this account/region.</p>
         </div>
       </div>
@@ -820,8 +820,8 @@ cdk deploy --profile hostahtml</code></pre></div>
           <div class="step-title">Copy the stack outputs</div>
           <p class="step-desc">When deploy finishes, CDK prints outputs. Copy all three — you'll use them in the next steps:</p>
           <div class="code-wrap"><div class="code-header"><span class="code-lang">example output</span></div><pre><code>Outputs:
-HostahtmlStack.ApiUrl = https://xxxxxxxxxx.execute-api.eu-west-2.amazonaws.com
-HostahtmlStack.BucketName = hostahtml-uploads-123456789012-eu-west-2
+HostahtmlStack.ApiUrl = https://xxxxxxxxxx.execute-api.eu-west-1.amazonaws.com
+HostahtmlStack.BucketName = hostahtml-uploads-123456789012-eu-west-1
 HostahtmlStack.DeployRoleArn = arn:aws:iam::123456789012:role/HostahtmlStack-...</code></pre></div>
         </div>
       </div>
@@ -832,7 +832,7 @@ HostahtmlStack.DeployRoleArn = arn:aws:iam::123456789012:role/HostahtmlStack-...
         <div class="step-body">
           <div class="step-title">Test the API</div>
           <p class="step-desc">Replace the URL with your <code>ApiUrl</code> output:</p>
-          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>curl https://xxxxxxxxxx.execute-api.eu-west-2.amazonaws.com/</code></pre></div>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>curl https://xxxxxxxxxx.execute-api.eu-west-1.amazonaws.com/</code></pre></div>
           <p class="step-desc">Expected response: <code>{"status":"ok"}</code></p>
         </div>
       </div>
@@ -890,7 +890,7 @@ git push -u origin main</code></pre></div>
           <p class="step-desc">In your GitHub repo go to <strong>Settings → Secrets and variables → Actions → New repository secret</strong>. Add:</p>
           <ul>
             <li><code>AWS_DEPLOY_ROLE_ARN</code> → the <code>DeployRoleArn</code> from your CDK outputs</li>
-            <li><code>AWS_REGION</code> → <code>eu-west-2</code> (or your region)</li>
+            <li><code>AWS_REGION</code> → <code>eu-west-1</code> (or your region)</li>
           </ul>
         </div>
       </div>
@@ -928,7 +928,9 @@ git push</code></pre></div>
         <input type="checkbox" id="cb-s7-upload">
         <div class="step-body">
           <div class="step-title">Upload a file and open the link</div>
-          <p class="step-desc">Use <code>app.html</code> to upload an HTML file. Click the returned link — it should open and render in your browser.</p>
+          <p class="step-desc">Serve the frontend locally and upload a file:</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>npx http-server . -p 8080 -c-1</code></pre></div>
+          <p class="step-desc">Open <a href="http://localhost:8080/app.html" target="_blank">http://localhost:8080/app.html</a>, drag an HTML file onto the drop zone, and click the returned link — it should render in your browser.</p>
         </div>
       </div>
 
