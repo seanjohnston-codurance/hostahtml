@@ -1,0 +1,457 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]: 0 / 26 complete
+  - generic [ref=e5]:
+    - navigation [ref=e6]:
+      - generic [ref=e7]: Sections
+      - list [ref=e8]:
+        - listitem [ref=e9]:
+          - link "1. Prerequisites" [ref=e10] [cursor=pointer]:
+            - /url: "#s1"
+        - listitem [ref=e11]:
+          - link "2. CLI Credentials" [ref=e12] [cursor=pointer]:
+            - /url: "#s2"
+        - listitem [ref=e13]:
+          - link "3. Clone & Install" [ref=e14] [cursor=pointer]:
+            - /url: "#s3"
+        - listitem [ref=e15]:
+          - link "4. Bootstrap CDK" [ref=e16] [cursor=pointer]:
+            - /url: "#s4"
+        - listitem [ref=e17]:
+          - link "5. Deploy Manually" [ref=e18] [cursor=pointer]:
+            - /url: "#s5"
+        - listitem [ref=e19]:
+          - link "6. GitHub Actions" [ref=e20] [cursor=pointer]:
+            - /url: "#s6"
+        - listitem [ref=e21]:
+          - link "7. Verify" [ref=e22] [cursor=pointer]:
+            - /url: "#s7"
+      - button "Reset progress" [ref=e24] [cursor=pointer]
+    - main [ref=e25]:
+      - generic [ref=e26]:
+        - heading "Deploy hostahtml to AWS" [level=1] [ref=e27]
+        - paragraph [ref=e28]: A step-by-step guide for Azure developers. Tick each step as you go — progress is saved to this browser.
+      - generic [ref=e29]:
+        - heading "1 Prerequisites" [level=2] [ref=e30]:
+          - generic [ref=e31]: "1"
+          - text: Prerequisites
+        - generic [ref=e32]:
+          - checkbox [ref=e33] [cursor=pointer]
+          - generic [ref=e34]:
+            - generic [ref=e35]: Install Node.js 20+
+            - paragraph [ref=e36]: Node powers both your TypeScript app and the CDK toolkit.
+            - generic [ref=e37]:
+              - generic [ref=e38]:
+                - button "macOS" [ref=e39] [cursor=pointer]
+                - button "Windows" [ref=e40] [cursor=pointer]
+                - button "Linux" [ref=e41] [cursor=pointer]
+              - generic [ref=e42]:
+                - generic [ref=e43]:
+                  - generic [ref=e44]:
+                    - generic [ref=e45]: bash
+                    - button "Copy" [ref=e46] [cursor=pointer]
+                  - code [ref=e48]: brew install node@20
+                - paragraph [ref=e49]:
+                  - text: No Homebrew? Install it from
+                  - link "brew.sh" [ref=e50] [cursor=pointer]:
+                    - /url: https://brew.sh
+                  - text: first, or use nvm below.
+        - generic [ref=e51]:
+          - checkbox [ref=e52] [cursor=pointer]
+          - generic [ref=e53]:
+            - generic [ref=e54]: Install AWS CLI v2
+            - paragraph [ref=e55]:
+              - text: The AWS CLI is your
+              - code [ref=e56]: az
+              - text: . You use it to authenticate, inspect resources, and run CDK commands.
+            - generic [ref=e57]:
+              - generic [ref=e58]:
+                - button "macOS" [ref=e59] [cursor=pointer]
+                - button "Windows" [ref=e60] [cursor=pointer]
+                - button "Linux" [ref=e61] [cursor=pointer]
+              - generic [ref=e63]:
+                - generic [ref=e64]:
+                  - generic [ref=e65]: bash
+                  - button "Copy" [ref=e66] [cursor=pointer]
+                - code [ref=e68]: brew install awscli
+            - group [ref=e69]:
+              - generic "▶ Azure equivalent" [ref=e70] [cursor=pointer]
+        - generic [ref=e71]:
+          - checkbox [ref=e72] [cursor=pointer]
+          - generic [ref=e73]:
+            - generic [ref=e74]: Install AWS CDK and ts-node
+            - paragraph [ref=e75]:
+              - text: CDK lets you define AWS infrastructure in TypeScript instead of YAML.
+              - code [ref=e76]: ts-node
+              - text: lets CDK run your TypeScript code directly.
+            - generic [ref=e77]:
+              - generic [ref=e78]:
+                - generic [ref=e79]: bash
+                - button "Copy" [ref=e80] [cursor=pointer]
+              - code [ref=e82]: npm install -g aws-cdk ts-node
+            - group [ref=e83]:
+              - generic "▶ Azure equivalent" [ref=e84] [cursor=pointer]
+        - generic [ref=e85]:
+          - checkbox [ref=e86] [cursor=pointer]
+          - generic [ref=e87]:
+            - generic [ref=e88]: Verify your installs
+            - generic [ref=e89]:
+              - generic [ref=e90]:
+                - generic [ref=e91]: bash
+                - button "Copy" [ref=e92] [cursor=pointer]
+              - code [ref=e94]: "node --version # v20.x.x or later aws --version # aws-cli/2.x.x cdk --version # 2.x.x"
+      - generic [ref=e95]:
+        - heading "2 Create CLI Credentials" [level=2] [ref=e96]:
+          - generic [ref=e97]: "2"
+          - text: Create CLI Credentials
+        - paragraph [ref=e98]:
+          - text: You have a root account with AWS Organizations underneath it. The CLI can't use your browser login directly — it needs a dedicated IAM user with access keys (a key ID + secret pair). You'll create that user inside the
+          - strong [ref=e99]: UK Playground
+          - text: account, not the root account.
+        - generic [ref=e100]:
+          - strong [ref=e101]: ⚠️ Don't use root account credentials for this
+          - text: It's tempting to just generate access keys for the root account, but AWS explicitly recommends against it — root has unrestricted access to everything including billing, and its credentials can't be scoped. Always create a dedicated IAM user instead.
+        - generic [ref=e102]:
+          - checkbox [ref=e103] [cursor=pointer]
+          - generic [ref=e104]:
+            - generic [ref=e105]: Switch to the UK Playground account in the Console
+            - paragraph [ref=e106]:
+              - text: In the AWS Console, click your account name in the top-right corner. You should see a
+              - strong [ref=e107]: Switch role
+              - text: option or a list of accounts. Navigate to
+              - strong [ref=e108]: UK Playground
+              - text: .
+            - paragraph [ref=e109]: Once switched, confirm the account name shown in the top-right has changed to UK Playground.
+            - group [ref=e110]:
+              - generic "▶ Azure equivalent" [ref=e111] [cursor=pointer]
+        - generic [ref=e112]:
+          - checkbox [ref=e113] [cursor=pointer]
+          - generic [ref=e114]:
+            - generic [ref=e115]: Create an IAM user
+            - paragraph [ref=e116]:
+              - text: In the UK Playground Console, go to
+              - strong [ref=e117]: IAM → Users → Create user
+              - text: .
+            - list [ref=e118]:
+              - listitem [ref=e119]:
+                - strong [ref=e120]: "User name:"
+                - code [ref=e121]: hostahtml-deploy
+              - listitem [ref=e122]:
+                - text: On the permissions step, choose
+                - strong [ref=e123]: Attach policies directly
+                - text: and add
+                - strong [ref=e124]: AdministratorAccess
+              - listitem [ref=e125]: Finish creating the user
+            - group [ref=e126]:
+              - generic "▶ Azure equivalent" [ref=e127] [cursor=pointer]
+        - generic [ref=e128]:
+          - checkbox [ref=e129] [cursor=pointer]
+          - generic [ref=e130]:
+            - generic [ref=e131]: Generate access keys for that user
+            - paragraph [ref=e132]:
+              - text: Click into the
+              - code [ref=e133]: hostahtml-deploy
+              - text: user →
+              - strong [ref=e134]: Security credentials
+              - text: tab →
+              - strong [ref=e135]: Create access key
+              - text: .
+            - list [ref=e136]:
+              - listitem [ref=e137]:
+                - text: Select
+                - strong [ref=e138]: Command Line Interface (CLI)
+                - text: as the use case
+              - listitem [ref=e139]:
+                - text: Click through to the final screen — you'll see an
+                - strong [ref=e140]: Access key ID
+                - text: and a
+                - strong [ref=e141]: Secret access key
+              - listitem [ref=e142]: Copy both now — the secret is only shown once
+            - generic [ref=e143]:
+              - strong [ref=e144]: Keep these safe
+              - text: These keys grant full admin access to UK Playground. Don't commit them to git, don't paste them in Slack. Store them in a password manager.
+        - generic [ref=e145]:
+          - checkbox [ref=e146] [cursor=pointer]
+          - generic [ref=e147]:
+            - generic [ref=e148]: Configure the AWS CLI profile
+            - generic [ref=e149]:
+              - generic [ref=e150]:
+                - generic [ref=e151]: bash
+                - button "Copy" [ref=e152] [cursor=pointer]
+              - code [ref=e154]: aws configure --profile hostahtml
+            - paragraph [ref=e155]: "Enter your values at each prompt:"
+            - list [ref=e156]:
+              - listitem [ref=e157]:
+                - strong [ref=e158]: "AWS Access Key ID:"
+                - text: the key ID you just copied
+              - listitem [ref=e159]:
+                - strong [ref=e160]: "AWS Secret Access Key:"
+                - text: the secret you just copied
+              - listitem [ref=e161]:
+                - strong [ref=e162]: "Default region name:"
+                - code [ref=e163]: eu-west-2
+                - text: (London — change if you prefer a different region)
+              - listitem [ref=e164]:
+                - strong [ref=e165]: "Default output format:"
+                - code [ref=e166]: json
+        - generic [ref=e167]:
+          - checkbox [ref=e168] [cursor=pointer]
+          - generic [ref=e169]:
+            - generic [ref=e170]: Verify it works
+            - generic [ref=e171]:
+              - generic [ref=e172]:
+                - generic [ref=e173]: bash
+                - button "Copy" [ref=e174] [cursor=pointer]
+              - code [ref=e176]: aws sts get-caller-identity --profile hostahtml
+            - paragraph [ref=e177]:
+              - text: You should see the UK Playground account ID, a user ID containing
+              - code [ref=e178]: hostahtml-deploy
+              - text: ", and an ARN. If you get an error, double-check the keys were copied correctly."
+      - generic [ref=e179]:
+        - heading "3 Clone & Install" [level=2] [ref=e180]:
+          - generic [ref=e181]: "3"
+          - text: Clone & Install
+        - generic [ref=e182]:
+          - checkbox [ref=e183] [cursor=pointer]
+          - generic [ref=e184]:
+            - generic [ref=e185]: Clone the repo
+            - generic [ref=e186]:
+              - generic [ref=e187]:
+                - generic [ref=e188]: bash
+                - button "Copy" [ref=e189] [cursor=pointer]
+              - code [ref=e191]: git clone https://github.com/YOUR_USERNAME/hostahtml.git cd hostahtml
+        - generic [ref=e192]:
+          - checkbox [ref=e193] [cursor=pointer]
+          - generic [ref=e194]:
+            - generic [ref=e195]: Install dependencies
+            - generic [ref=e196]:
+              - generic [ref=e197]:
+                - generic [ref=e198]: bash
+                - button "Copy" [ref=e199] [cursor=pointer]
+              - code [ref=e201]: cd infra && npm install
+            - paragraph [ref=e202]: This installs CDK, the AWS SDK, TypeScript, and esbuild (the bundler that packages your Lambda function).
+        - generic [ref=e203]:
+          - checkbox [ref=e204] [cursor=pointer]
+          - generic [ref=e205]:
+            - generic [ref=e206]: Set your GitHub username in cdk.json
+            - paragraph [ref=e207]:
+              - text: Open
+              - code [ref=e208]: infra/cdk.json
+              - text: and replace
+              - code [ref=e209]: REPLACE_WITH_YOUR_GITHUB_USERNAME
+              - text: "with your actual GitHub username:"
+            - generic [ref=e210]:
+              - generic [ref=e212]: infra/cdk.json (edit this line)
+              - code [ref=e214]: "\"githubOwner\": \"your-github-username-here\""
+            - paragraph [ref=e215]: This scopes the GitHub Actions deployment role to your repo only — no-one else's pushes can trigger a deploy to your AWS account.
+        - generic [ref=e216]:
+          - checkbox [ref=e217] [cursor=pointer]
+          - generic [ref=e218]:
+            - generic [ref=e219]: Understand the project layout
+            - generic [ref=e220]:
+              - generic [ref=e222]: tree
+              - code [ref=e224]: "infra/ bin/hostahtml.ts ← CDK entry point — creates the stack lib/hostahtml-stack.ts ← Infrastructure definition (Lambda, API, S3, IAM) lambda/handler.ts ← Your Lambda function code cdk.json ← CDK config: how to run the app, context variables tsconfig.json ← TypeScript config"
+            - group [ref=e225]:
+              - generic "▶ Azure equivalent" [ref=e226] [cursor=pointer]
+      - generic [ref=e227]:
+        - heading "4 Bootstrap CDK" [level=2] [ref=e228]:
+          - generic [ref=e229]: "4"
+          - text: Bootstrap CDK
+        - paragraph [ref=e230]: "Before CDK can deploy anything, it needs a one-time setup in your AWS account: an S3 bucket for deployment assets, an ECR repository for container images, and some IAM roles CDK uses internally. This is done once per AWS account + region."
+        - group [ref=e231]:
+          - generic "▶ Azure equivalent" [ref=e232] [cursor=pointer]
+        - generic [ref=e233]:
+          - checkbox [ref=e234] [cursor=pointer]
+          - generic [ref=e235]:
+            - generic [ref=e236]: Get your account ID and region
+            - generic [ref=e237]:
+              - generic [ref=e238]:
+                - generic [ref=e239]: bash
+                - button "Copy" [ref=e240] [cursor=pointer]
+              - code [ref=e242]: "# Account ID (12 digits) aws sts get-caller-identity --profile hostahtml --query Account --output text # Region you configured aws configure get region --profile hostahtml"
+            - paragraph [ref=e243]: Note both values down — you need them in the next step.
+        - generic [ref=e244]:
+          - checkbox [ref=e245] [cursor=pointer]
+          - generic [ref=e246]:
+            - generic [ref=e247]: Run bootstrap
+            - paragraph [ref=e248]:
+              - text: Replace
+              - code [ref=e249]: "123456789012"
+              - text: with your account ID and
+              - code [ref=e250]: eu-west-2
+              - text: "with your region:"
+            - generic [ref=e251]:
+              - generic [ref=e252]:
+                - generic [ref=e253]: bash
+                - button "Copy" [ref=e254] [cursor=pointer]
+              - code [ref=e256]: cd infra cdk bootstrap aws://123456789012/eu-west-2 --profile hostahtml
+            - paragraph [ref=e257]:
+              - text: Takes about 2 minutes. You'll see
+              - code [ref=e258]: ✅ Environment aws://...
+              - text: when it's done. You never need to run this again for this account/region.
+      - generic [ref=e259]:
+        - heading "5 Deploy Manually" [level=2] [ref=e260]:
+          - generic [ref=e261]: "5"
+          - text: Deploy Manually
+        - paragraph [ref=e262]: Your first deploy. CDK compiles your TypeScript, generates a CloudFormation template, and creates all your AWS resources in one command.
+        - generic [ref=e263]:
+          - checkbox [ref=e264] [cursor=pointer]
+          - generic [ref=e265]:
+            - generic [ref=e266]: Run cdk deploy
+            - generic [ref=e267]:
+              - generic [ref=e268]:
+                - generic [ref=e269]: bash
+                - button "Copy" [ref=e270] [cursor=pointer]
+              - code [ref=e272]: cd infra cdk deploy --profile hostahtml
+            - paragraph [ref=e273]:
+              - text: CDK shows you a list of resources it's about to create and asks for confirmation. Type
+              - code [ref=e274]: "y"
+              - text: . The first deploy takes 3–5 minutes — CDK is compiling your Lambda and standing up API Gateway, S3, and IAM resources.
+            - group [ref=e275]:
+              - generic "▶ Azure equivalent" [ref=e276] [cursor=pointer]
+        - generic [ref=e277]:
+          - checkbox [ref=e278] [cursor=pointer]
+          - generic [ref=e279]:
+            - generic [ref=e280]: Copy the stack outputs
+            - paragraph [ref=e281]: "When deploy finishes, CDK prints outputs. Copy all three — you'll use them in the next steps:"
+            - generic [ref=e282]:
+              - generic [ref=e284]: example output
+              - code [ref=e286]: "Outputs: HostahtmlStack.ApiUrl = https://xxxxxxxxxx.execute-api.eu-west-2.amazonaws.com HostahtmlStack.BucketName = hostahtml-uploads-123456789012-eu-west-2 HostahtmlStack.DeployRoleArn = arn:aws:iam::123456789012:role/HostahtmlStack-..."
+        - generic [ref=e287]:
+          - checkbox [ref=e288] [cursor=pointer]
+          - generic [ref=e289]:
+            - generic [ref=e290]: Test the API
+            - paragraph [ref=e291]:
+              - text: Replace the URL with your
+              - code [ref=e292]: ApiUrl
+              - text: "output:"
+            - generic [ref=e293]:
+              - generic [ref=e294]:
+                - generic [ref=e295]: bash
+                - button "Copy" [ref=e296] [cursor=pointer]
+              - code [ref=e298]: curl https://xxxxxxxxxx.execute-api.eu-west-2.amazonaws.com/
+            - paragraph [ref=e299]:
+              - text: "Expected response:"
+              - code [ref=e300]: "{\"status\":\"ok\"}"
+        - generic [ref=e301]:
+          - checkbox [ref=e302] [cursor=pointer]
+          - generic [ref=e303]:
+            - generic [ref=e304]: Test the uploader
+            - paragraph [ref=e305]:
+              - text: Open
+              - code [ref=e306]: app.html
+              - text: in your browser. Paste your
+              - code [ref=e307]: ApiUrl
+              - text: into the API URL field at the top and click Save. Then drag an HTML file onto the drop zone.
+            - generic [ref=e308]:
+              - strong [ref=e309]: 💡 Need a test file?
+              - generic [ref=e310]:
+                - generic [ref=e311]:
+                  - generic [ref=e312]: bash
+                  - button "Copy" [ref=e313] [cursor=pointer]
+                - code [ref=e315]: echo "<h1>Hello from hostahtml!</h1>" > test.html
+            - paragraph [ref=e316]: You should get a pre-signed S3 URL back. Click it — your page should render in the browser. The link is valid for 7 days.
+      - generic [ref=e317]:
+        - heading "6 GitHub Actions CI/CD" [level=2] [ref=e318]:
+          - generic [ref=e319]: "6"
+          - text: GitHub Actions CI/CD
+        - generic [ref=e320]:
+          - strong [ref=e321]: 🔐 OIDC — no stored secrets
+          - text: Instead of creating an IAM user and storing its access keys as GitHub secrets, we use OIDC (OpenID Connect). GitHub Actions proves its identity to AWS using a short-lived token tied to the specific repo and branch. AWS trusts it and issues temporary credentials. There are no long-lived secrets to leak or rotate. The CDK stack already set this up for you — you just need to tell GitHub the role ARN.
+          - group [ref=e322]:
+            - generic "▶ Azure equivalent" [ref=e323] [cursor=pointer]
+        - generic [ref=e324]:
+          - checkbox [ref=e325] [cursor=pointer]
+          - generic [ref=e326]:
+            - generic [ref=e327]: Push the code to GitHub
+            - paragraph [ref=e328]: "Create a new repo on GitHub (private is fine), then:"
+            - generic [ref=e329]:
+              - generic [ref=e330]:
+                - generic [ref=e331]: bash
+                - button "Copy" [ref=e332] [cursor=pointer]
+              - code [ref=e334]: git remote add origin https://github.com/YOUR_USERNAME/hostahtml.git git push -u origin main
+        - generic [ref=e335]:
+          - checkbox [ref=e336] [cursor=pointer]
+          - generic [ref=e337]:
+            - generic [ref=e338]: Add two GitHub Actions secrets
+            - paragraph [ref=e339]:
+              - text: In your GitHub repo go to
+              - strong [ref=e340]: Settings → Secrets and variables → Actions → New repository secret
+              - text: ". Add:"
+            - list [ref=e341]:
+              - listitem [ref=e342]:
+                - code [ref=e343]: AWS_DEPLOY_ROLE_ARN
+                - text: → the
+                - code [ref=e344]: DeployRoleArn
+                - text: from your CDK outputs
+              - listitem [ref=e345]:
+                - code [ref=e346]: AWS_REGION
+                - text: →
+                - code [ref=e347]: eu-west-2
+                - text: (or your region)
+        - generic [ref=e348]:
+          - checkbox [ref=e349] [cursor=pointer]
+          - generic [ref=e350]:
+            - generic [ref=e351]: Push to main to trigger a deploy
+            - generic [ref=e352]:
+              - generic [ref=e353]:
+                - generic [ref=e354]: bash
+                - button "Copy" [ref=e355] [cursor=pointer]
+              - code [ref=e357]: git commit --allow-empty -m "trigger deploy" git push
+            - paragraph [ref=e358]:
+              - text: Go to the
+              - strong [ref=e359]: Actions
+              - text: tab in your GitHub repo. Watch the
+              - strong [ref=e360]: Deploy
+              - text: workflow — it should go green in about 3 minutes.
+      - generic [ref=e361]:
+        - heading "7 Verify Everything" [level=2] [ref=e362]:
+          - generic [ref=e363]: "7"
+          - text: Verify Everything
+        - generic [ref=e364]:
+          - checkbox [ref=e365] [cursor=pointer]
+          - generic [ref=e366]:
+            - generic [ref=e367]: Hit the health check
+            - generic [ref=e368]:
+              - generic [ref=e369]:
+                - generic [ref=e370]: bash
+                - button "Copy" [ref=e371] [cursor=pointer]
+              - code [ref=e373]: curl https://YOUR_API_URL/
+            - paragraph [ref=e374]:
+              - text: "Expected:"
+              - code [ref=e375]: "{\"status\":\"ok\"}"
+              - text: . If this still works after the GitHub Actions deploy, the CI/CD pipeline is deploying correctly.
+        - generic [ref=e376]:
+          - checkbox [ref=e377] [cursor=pointer]
+          - generic [ref=e378]:
+            - generic [ref=e379]: Upload a file and open the link
+            - paragraph [ref=e380]:
+              - text: Use
+              - code [ref=e381]: app.html
+              - text: to upload an HTML file. Click the returned link — it should open and render in your browser.
+        - generic [ref=e382]:
+          - checkbox [ref=e383] [cursor=pointer]
+          - generic [ref=e384]:
+            - generic [ref=e385]: Check CloudWatch Logs
+            - paragraph [ref=e386]:
+              - text: In the AWS Console, go to
+              - strong [ref=e387]: CloudWatch → Log groups
+              - text: and find
+              - code [ref=e388]: /aws/lambda/HostahtmlStack-ApiFunction...
+              - text: . You should see the upload logged there.
+            - group [ref=e389]:
+              - generic "▶ Azure equivalent" [ref=e390] [cursor=pointer]
+        - generic [ref=e391]:
+          - checkbox [ref=e392] [cursor=pointer]
+          - generic [ref=e393]:
+            - generic [ref=e394]: Check S3 in the console
+            - paragraph [ref=e395]:
+              - text: In the AWS Console, go to
+              - strong [ref=e396]: S3
+              - text: and find your
+              - code [ref=e397]: hostahtml-uploads-...
+              - text: bucket. You should see the files you uploaded.
+            - group [ref=e398]:
+              - generic "▶ Azure equivalent" [ref=e399] [cursor=pointer]
+        - generic [ref=e400]:
+          - strong [ref=e401]: 🎉 You're live on AWS.
+          - text: "You have a TypeScript Lambda behind API Gateway, a private S3 bucket with pre-signed URL access, and a GitHub Actions CI/CD pipeline — all running in an enterprise AWS account. Next step: add auth, file listing, deletion, and privacy controls to build out the full hostahtml app."

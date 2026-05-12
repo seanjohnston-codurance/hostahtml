@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>hostahtml</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-secondary: #f6f8fa;
+      --text: #24292f;
+      --text-muted: #57606a;
+      --border: #d0d7de;
+      --accent: #c7821a;
+      --accent-dim: #fff8eb;
+      --success: #1a7f37;
+      --success-bg: #dafbe1;
+      --error: #cf222e;
+      --error-bg: #ffebe9;
+      --drop-border: #d0d7de;
+      --drop-hover-border: #c7821a;
+      --drop-hover-bg: #fff8eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --bg-secondary: #161b22;
+        --text: #c9d1d9;
+        --text-muted: #8b949e;
+        --border: #30363d;
+        --accent: #f0b429;
+        --accent-dim: #2a1f00;
+        --success: #3fb950;
+        --success-bg: #0d2119;
+        --error: #f85149;
+        --error-bg: #1c0a0a;
+        --drop-border: #30363d;
+        --drop-hover-border: #f0b429;
+        --drop-hover-bg: #1a1600;
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Config bar */
+    #config-bar {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+    #config-bar label { color: var(--text-muted); white-space: nowrap; }
+    #api-url-input {
+      flex: 1;
+      max-width: 480px;
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+      font-family: "SF Mono", "Fira Code", monospace;
+    }
+    #api-url-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    #save-url-btn {
+      padding: 5px 14px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    #save-url-btn:hover { opacity: 0.9; }
+    .config-hint {
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+    .config-hint a { color: var(--accent); cursor: pointer; text-decoration: none; }
+    .config-hint a:hover { text-decoration: underline; }
+
+    /* Main upload area */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      gap: 24px;
+    }
+
+    .page-title {
+      text-align: center;
+    }
+    .page-title h1 {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .page-title h1 span { color: var(--accent); }
+    .page-title p {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin-top: 6px;
+    }
+
+    /* Drop zone */
+    #drop-zone {
+      width: 100%;
+      max-width: 520px;
+      border: 2px dashed var(--drop-border);
+      border-radius: 12px;
+      padding: 48px 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--bg);
+    }
+    #drop-zone:hover, #drop-zone.dragging {
+      border-color: var(--drop-hover-border);
+      background: var(--drop-hover-bg);
+    }
+    #drop-zone.uploading {
+      border-color: var(--accent);
+      cursor: default;
+    }
+    .drop-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+      line-height: 1;
+    }
+    .drop-primary {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+    .drop-secondary {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .drop-secondary label {
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    #file-input { display: none; }
+
+    /* Upload progress */
+    #upload-progress {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Result card */
+    #result {
+      display: none;
+      width: 100%;
+      max-width: 520px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .result-header {
+      padding: 12px 16px;
+      background: var(--success-bg);
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--success);
+    }
+    .result-body { padding: 16px; }
+    .result-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .url-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .url-display {
+      flex: 1;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: "SF Mono", "Fira Code", monospace;
+      color: var(--text);
+      background: var(--bg-secondary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .copy-btn {
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .copy-btn.copied { color: var(--success); border-color: var(--success); }
+    .result-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .open-btn {
+      flex: 1;
+      padding: 8px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .open-btn:hover { opacity: 0.9; }
+    .upload-another-btn {
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .upload-another-btn:hover { border-color: var(--text-muted); }
+
+    /* Error */
+    #error-msg {
+      display: none;
+      width: 100%;
+      max-width: 520px;
+      padding: 12px 16px;
+      background: var(--error-bg);
+      border: 1px solid var(--error);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--error);
+    }
+
+    /* No-config warning */
+    #no-config-warning {
+      display: none;
+      width: 100%;
+      max-width: 520px;
+      padding: 12px 16px;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text);
+    }
+    #no-config-warning strong { color: var(--accent); }
+
+    footer {
+      padding: 16px 20px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<!-- Config bar: paste your API Gateway URL here after deploying -->
+<div id="config-bar">
+  <label for="api-url-input">API URL</label>
+  <input
+    id="api-url-input"
+    type="url"
+    placeholder="https://xxxxxxxxxx.execute-api.eu-west-2.amazonaws.com"
+    autocomplete="off"
+    spellcheck="false"
+  >
+  <button id="save-url-btn" onclick="saveApiUrl()">Save</button>
+  <span class="config-hint" id="config-hint"></span>
+</div>
+
+<main>
+  <div class="page-title">
+    <h1>hosta<span>html</span></h1>
+    <p>Drop an HTML file to host it instantly.</p>
+  </div>
+
+  <!-- Drop zone (visible when no upload in progress) -->
+  <div id="drop-zone" onclick="document.getElementById('file-input').click()">
+    <div class="drop-icon">📄</div>
+    <div class="drop-primary">Drop your HTML file here</div>
+    <div class="drop-secondary">
+      or <label for="file-input" onclick="event.stopPropagation()">browse to select</label>
+    </div>
+    <input id="file-input" type="file" accept=".html,text/html">
+  </div>
+
+  <!-- Uploading spinner -->
+  <div id="upload-progress">
+    <div class="spinner"></div>
+    <span id="upload-status">Uploading…</span>
+  </div>
+
+  <!-- No config warning -->
+  <div id="no-config-warning">
+    <strong>API URL not set.</strong> Enter your API Gateway URL in the bar above before uploading. You'll find it in the CDK deploy outputs — see <a href="guide.html">the setup guide</a>.
+  </div>
+
+  <!-- Error -->
+  <div id="error-msg"></div>
+
+  <!-- Result card -->
+  <div id="result">
+    <div class="result-header">✓ Uploaded successfully</div>
+    <div class="result-body">
+      <div class="result-label">Your link</div>
+      <div class="url-row">
+        <div class="url-display" id="result-url"></div>
+        <button class="copy-btn" id="copy-url-btn" onclick="copyUrl()">Copy</button>
+      </div>
+      <div class="result-actions">
+        <a class="open-btn" id="open-link" href="#" target="_blank" rel="noopener">Open in new tab</a>
+        <button class="upload-another-btn" onclick="resetToUpload()">Upload another</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <a href="guide.html">Setup guide</a> &nbsp;·&nbsp;
+  Links expire after 7 days &nbsp;·&nbsp;
+  Walking skeleton — no auth yet
+</footer>
+
+<script>
+  const API_URL_KEY = 'hostahtml-api-url';
+
+  // ── Config ─────────────────────────────────────────────────────────────────
+  function getApiUrl() {
+    return localStorage.getItem(API_URL_KEY) || '';
+  }
+
+  function saveApiUrl() {
+    const val = document.getElementById('api-url-input').value.trim().replace(/\/$/, '');
+    if (!val) return;
+    localStorage.setItem(API_URL_KEY, val);
+    document.getElementById('api-url-input').value = val;
+    showConfigHint('Saved!');
+    document.getElementById('no-config-warning').style.display = 'none';
+  }
+
+  function showConfigHint(msg) {
+    const hint = document.getElementById('config-hint');
+    hint.textContent = msg;
+    setTimeout(() => { hint.textContent = ''; }, 2000);
+  }
+
+  function initConfig() {
+    const saved = getApiUrl();
+    if (saved) {
+      document.getElementById('api-url-input').value = saved;
+      document.getElementById('config-hint').textContent = 'Saved ·';
+      document.getElementById('config-hint').innerHTML =
+        'Saved · <a onclick="clearApiUrl()">change</a>';
+    }
+  }
+
+  function clearApiUrl() {
+    localStorage.removeItem(API_URL_KEY);
+    document.getElementById('api-url-input').value = '';
+    document.getElementById('config-hint').textContent = '';
+  }
+
+  // ── Drag and drop ──────────────────────────────────────────────────────────
+  const dropZone = document.getElementById('drop-zone');
+
+  dropZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropZone.classList.add('dragging');
+  });
+
+  dropZone.addEventListener('dragleave', e => {
+    if (!dropZone.contains(e.relatedTarget)) {
+      dropZone.classList.remove('dragging');
+    }
+  });
+
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragging');
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  });
+
+  document.getElementById('file-input').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (file) handleFile(file);
+  });
+
+  // ── Upload ─────────────────────────────────────────────────────────────────
+  async function handleFile(file) {
+    const apiUrl = getApiUrl();
+    if (!apiUrl) {
+      document.getElementById('no-config-warning').style.display = 'block';
+      return;
+    }
+
+    showUploading(file.name);
+    hideError();
+
+    try {
+      const response = await fetch(
+        `${apiUrl}/upload?filename=${encodeURIComponent(file.name)}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/html' },
+          body: file,
+        }
+      );
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Upload failed (${response.status}): ${text}`);
+      }
+
+      const data = await response.json();
+      showResult(data.url);
+    } catch (err) {
+      showError(err.message || 'Upload failed. Check the API URL and try again.');
+      resetToUpload();
+    }
+  }
+
+  // ── UI state ───────────────────────────────────────────────────────────────
+  function showUploading(filename) {
+    document.getElementById('drop-zone').style.display = 'none';
+    document.getElementById('upload-progress').style.display = 'flex';
+    document.getElementById('upload-status').textContent = `Uploading ${filename}…`;
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('no-config-warning').style.display = 'none';
+  }
+
+  function showResult(url) {
+    document.getElementById('upload-progress').style.display = 'none';
+    document.getElementById('result-url').textContent = url;
+    document.getElementById('open-link').href = url;
+    document.getElementById('result').style.display = 'block';
+  }
+
+  function resetToUpload() {
+    document.getElementById('drop-zone').style.display = 'block';
+    document.getElementById('upload-progress').style.display = 'none';
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('file-input').value = '';
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg;
+    el.style.display = 'block';
+    document.getElementById('upload-progress').style.display = 'none';
+    document.getElementById('drop-zone').style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 8000);
+  }
+
+  function hideError() {
+    document.getElementById('error-msg').style.display = 'none';
+  }
+
+  // ── Copy URL ───────────────────────────────────────────────────────────────
+  function copyUrl() {
+    const url = document.getElementById('result-url').textContent;
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById('copy-url-btn');
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  initConfig();
+</script>
+</body>
+</html>
