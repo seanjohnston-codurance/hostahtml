@@ -378,9 +378,10 @@
       <li><a href="#s2" id="nav-s2">2. CLI Credentials</a></li>
       <li><a href="#s3" id="nav-s3">3. Clone &amp; Install</a></li>
       <li><a href="#s4" id="nav-s4">4. Bootstrap CDK</a></li>
-      <li><a href="#s5" id="nav-s5">5. Deploy Manually</a></li>
-      <li><a href="#s6" id="nav-s6">6. GitHub Actions</a></li>
-      <li><a href="#s7" id="nav-s7">7. Verify</a></li>
+      <li><a href="#s5" id="nav-s5">5. Google OAuth</a></li>
+      <li><a href="#s6" id="nav-s6">6. Deploy Manually</a></li>
+      <li><a href="#s7" id="nav-s7">7. GitHub Actions</a></li>
+      <li><a href="#s8" id="nav-s8">8. Verify</a></li>
     </ul>
     <div class="sidebar-footer">
       <button class="reset-btn" onclick="resetProgress()">Reset progress</button>
@@ -789,21 +790,88 @@ cdk bootstrap aws://123456789012/eu-west-1 --profile hostahtml</code></pre></div
     </section>
 
     <!-- ================================================================ -->
-    <!-- SECTION 5: Deploy Manually                                        -->
+    <!-- SECTION 5: Google OAuth                                           -->
     <!-- ================================================================ -->
     <section id="s5">
-      <h2><span class="badge" id="badge-s5">5</span> Deploy Manually</h2>
+      <h2><span class="badge" id="badge-s5">5</span> Google OAuth Setup</h2>
+
+      <p class="step-desc" style="margin-bottom: 16px;">The frontend uses Google Sign-In to identify users. You need a Google OAuth 2.0 Client ID before deploying — it gets baked into both the Lambda (for token verification) and the frontend (for the sign-in button).</p>
+
+      <div class="callout info">
+        <strong>ℹ️ This uses your existing Google Workspace account</strong>
+        You need a Google Cloud project to issue OAuth credentials. If your organisation already has one you can use, great — just make sure you can create credentials in it. Otherwise create a new free personal project.
+      </div>
+
+      <!-- Create project -->
+      <div class="step" id="step-s5-project">
+        <input type="checkbox" id="cb-s5-project">
+        <div class="step-body">
+          <div class="step-title">Go to Google Cloud Console and create a project</div>
+          <p class="step-desc">Open <a href="https://console.cloud.google.com" target="_blank" rel="noopener">console.cloud.google.com</a>. In the top-left project picker, click <strong>New Project</strong>. Give it a name (e.g. <code>hostahtml</code>) and click <strong>Create</strong>.</p>
+        </div>
+      </div>
+
+      <!-- Consent screen -->
+      <div class="step" id="step-s5-consent">
+        <input type="checkbox" id="cb-s5-consent">
+        <div class="step-body">
+          <div class="step-title">Configure the OAuth consent screen</div>
+          <p class="step-desc">Go to <strong>APIs &amp; Services → OAuth consent screen</strong>. Select <strong>External</strong> and click Create. Fill in:</p>
+          <ul>
+            <li><strong>App name:</strong> hostahtml</li>
+            <li><strong>User support email:</strong> your email</li>
+            <li><strong>Developer contact email:</strong> your email</li>
+          </ul>
+          <p class="step-desc">Click <strong>Save and Continue</strong> through the remaining steps (Scopes and Test users can be left empty). Back on the consent screen, if it shows <strong>Publishing status: Testing</strong>, click <strong>Publish App → Confirm</strong> so any Google account can sign in (not just manually-added test users).</p>
+        </div>
+      </div>
+
+      <!-- Create credentials -->
+      <div class="step" id="step-s5-credentials">
+        <input type="checkbox" id="cb-s5-credentials">
+        <div class="step-body">
+          <div class="step-title">Create an OAuth 2.0 Client ID</div>
+          <p class="step-desc">Go to <strong>APIs &amp; Services → Credentials → Create Credentials → OAuth client ID</strong>. Set:</p>
+          <ul>
+            <li><strong>Application type:</strong> Web application</li>
+            <li><strong>Name:</strong> hostahtml</li>
+            <li><strong>Authorized JavaScript origins:</strong> add <code>http://localhost:5173</code> (for local dev)</li>
+          </ul>
+          <p class="step-desc">Click <strong>Create</strong>. A dialog shows your Client ID — it ends in <code>.apps.googleusercontent.com</code>. Copy it.</p>
+          <div class="callout info" style="margin-top: 8px;">
+            <strong>💡 Client IDs are not secrets.</strong> They're safe to put in environment variables and will be visible in the compiled frontend JavaScript. The actual verification happens server-side in the Lambda.
+          </div>
+        </div>
+      </div>
+
+      <!-- Save Client ID -->
+      <div class="step" id="step-s5-save">
+        <input type="checkbox" id="cb-s5-save">
+        <div class="step-body">
+          <div class="step-title">Save the Client ID to your .envrc</div>
+          <p class="step-desc">Add it to your direnv file so you can reference it in deploy commands:</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>echo 'export GOOGLE_CLIENT_ID=YOUR_CLIENT_ID.apps.googleusercontent.com' >> .envrc
+direnv allow</code></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- SECTION 6: Deploy Manually                                        -->
+    <!-- ================================================================ -->
+    <section id="s6">
+      <h2><span class="badge" id="badge-s6">6</span> Deploy Manually</h2>
 
       <p class="step-desc" style="margin-bottom: 16px;">Your first deploy. CDK compiles your TypeScript, generates a CloudFormation template, and creates all your AWS resources in one command.</p>
 
       <!-- Deploy -->
-      <div class="step" id="step-s5-deploy">
-        <input type="checkbox" id="cb-s5-deploy">
+      <div class="step" id="step-s6-deploy">
+        <input type="checkbox" id="cb-s6-deploy">
         <div class="step-body">
           <div class="step-title">Run cdk deploy</div>
           <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>cd infra
-cdk deploy --profile hostahtml</code></pre></div>
-          <p class="step-desc">CDK shows you a list of resources it's about to create and asks for confirmation. Type <code>y</code>. The first deploy takes 3–5 minutes — CDK is compiling your Lambda and standing up API Gateway, S3, and IAM resources.</p>
+cdk deploy --context googleClientId=$GOOGLE_CLIENT_ID --profile hostahtml</code></pre></div>
+          <p class="step-desc">CDK shows you a list of resources it's about to create and asks for confirmation. Type <code>y</code>. The first deploy takes 5–10 minutes — CDK is compiling your Lambda, standing up API Gateway, S3, IAM, and a CloudFront distribution.</p>
           <details class="azure">
             <summary>Azure equivalent</summary>
             <div class="azure-body">
@@ -814,21 +882,25 @@ cdk deploy --profile hostahtml</code></pre></div>
       </div>
 
       <!-- Note outputs -->
-      <div class="step" id="step-s5-outputs">
-        <input type="checkbox" id="cb-s5-outputs">
+      <div class="step" id="step-s6-outputs">
+        <input type="checkbox" id="cb-s6-outputs">
         <div class="step-body">
           <div class="step-title">Copy the stack outputs</div>
-          <p class="step-desc">When deploy finishes, CDK prints outputs. Copy all three — you'll use them in the next steps:</p>
+          <p class="step-desc">When deploy finishes, CDK prints outputs. Copy them all — you'll use them in the next steps:</p>
           <div class="code-wrap"><div class="code-header"><span class="code-lang">example output</span></div><pre><code>Outputs:
-HostahtmlStack.ApiUrl = https://xxxxxxxxxx.execute-api.eu-west-1.amazonaws.com
-HostahtmlStack.BucketName = hostahtml-uploads-123456789012-eu-west-1
-HostahtmlStack.DeployRoleArn = arn:aws:iam::123456789012:role/HostahtmlStack-...</code></pre></div>
+HostahtmlStack.ApiUrl           = https://xxxxxxxxxx.execute-api.eu-west-1.amazonaws.com
+HostahtmlStack.BucketName       = hostahtml-uploads-123456789012-eu-west-1
+HostahtmlStack.FrontendBucketName = hostahtml-frontend-123456789012-eu-west-1
+HostahtmlStack.FrontendUrl      = https://xxxxxxxxxxxx.cloudfront.net
+HostahtmlStack.DistributionId   = EXXXXXXXXXX
+HostahtmlStack.DeployRoleArn    = arn:aws:iam::123456789012:role/HostahtmlStack-...</code></pre></div>
+          <p class="step-desc"><code>FrontendUrl</code> is your app's public URL. The frontend isn't deployed yet — that happens via GitHub Actions (Section 7). Keep this URL handy — you'll also add it to your Google OAuth authorized origins next.</p>
         </div>
       </div>
 
       <!-- Test health check -->
-      <div class="step" id="step-s5-curl">
-        <input type="checkbox" id="cb-s5-curl">
+      <div class="step" id="step-s6-curl">
+        <input type="checkbox" id="cb-s6-curl">
         <div class="step-body">
           <div class="step-title">Test the API</div>
           <p class="step-desc">Replace the URL with your <code>ApiUrl</code> output:</p>
@@ -837,28 +909,38 @@ HostahtmlStack.DeployRoleArn = arn:aws:iam::123456789012:role/HostahtmlStack-...
         </div>
       </div>
 
-      <!-- Test upload -->
-      <div class="step" id="step-s5-upload">
-        <input type="checkbox" id="cb-s5-upload">
+      <!-- Add CloudFront origin -->
+      <div class="step" id="step-s6-oauth-origin">
+        <input type="checkbox" id="cb-s6-oauth-origin">
         <div class="step-body">
-          <div class="step-title">Test the uploader</div>
-          <p class="step-desc">Serve <code>app.html</code> via a local HTTP server — opening it directly from the filesystem causes browsers to send <code>Origin: null</code> which some CORS implementations reject.</p>
-          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>npx http-server . -p 8080 -c-1</code></pre></div>
-          <p class="step-desc">Then open <a href="http://localhost:8080/app.html" target="_blank">http://localhost:8080/app.html</a> in your browser. Paste your <code>ApiUrl</code> into the config field at the top and click Save. Then drag an HTML file onto the drop zone.</p>
+          <div class="step-title">Add the CloudFront URL to Google OAuth authorized origins</div>
+          <p class="step-desc">Go back to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Google Cloud Console → APIs &amp; Services → Credentials</a>, click your OAuth 2.0 Client ID, and add your <code>FrontendUrl</code> output (e.g. <code>https://xxxxxxxxxxxx.cloudfront.net</code>) to <strong>Authorized JavaScript origins</strong>. Click Save.</p>
+          <p class="step-desc">Without this, the Google sign-in button will refuse to work on the deployed app.</p>
+        </div>
+      </div>
+
+      <!-- Test locally -->
+      <div class="step" id="step-s6-localdev">
+        <input type="checkbox" id="cb-s6-localdev">
+        <div class="step-body">
+          <div class="step-title">Test the frontend locally</div>
+          <p class="step-desc">Start the Vite dev server to test Google Sign-In and upload before deploying:</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>cd frontend
+VITE_API_URL=https://YOUR_API_URL VITE_GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID npm run dev</code></pre></div>
+          <p class="step-desc">Open <a href="http://localhost:5173" target="_blank">http://localhost:5173</a>. Sign in with your Google account, then drag an HTML file onto the drop zone. You should get a pre-signed URL back — click it to confirm your page renders.</p>
           <div class="callout info">
             <strong>💡 Need a test file?</strong>
             <div class="code-wrap" style="margin-top: 8px;"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>echo "&lt;h1&gt;Hello from hostahtml!&lt;/h1&gt;" > test.html</code></pre></div>
           </div>
-          <p class="step-desc">You should get a pre-signed S3 URL back. Click it — your page should render in the browser. The link is valid for 7 days.</p>
         </div>
       </div>
     </section>
 
     <!-- ================================================================ -->
-    <!-- SECTION 6: GitHub Actions                                         -->
+    <!-- SECTION 7: GitHub Actions                                         -->
     <!-- ================================================================ -->
-    <section id="s6">
-      <h2><span class="badge" id="badge-s6">6</span> GitHub Actions CI/CD</h2>
+    <section id="s7">
+      <h2><span class="badge" id="badge-s7">7</span> GitHub Actions CI/CD</h2>
 
       <div class="callout info">
         <strong>🔐 OIDC — no stored secrets</strong>
@@ -872,8 +954,8 @@ HostahtmlStack.DeployRoleArn = arn:aws:iam::123456789012:role/HostahtmlStack-...
       </div>
 
       <!-- Push to GitHub -->
-      <div class="step" id="step-s6-push">
-        <input type="checkbox" id="cb-s6-push">
+      <div class="step" id="step-s7-push">
+        <input type="checkbox" id="cb-s7-push">
         <div class="step-body">
           <div class="step-title">Push the code to GitHub</div>
           <p class="step-desc">Create a new repo on GitHub (private is fine), then:</p>
@@ -883,39 +965,41 @@ git push -u origin main</code></pre></div>
       </div>
 
       <!-- Add secrets -->
-      <div class="step" id="step-s6-secrets">
-        <input type="checkbox" id="cb-s6-secrets">
+      <div class="step" id="step-s7-secrets">
+        <input type="checkbox" id="cb-s7-secrets">
         <div class="step-body">
-          <div class="step-title">Add two GitHub Actions secrets</div>
+          <div class="step-title">Add three GitHub Actions secrets</div>
           <p class="step-desc">In your GitHub repo go to <strong>Settings → Secrets and variables → Actions → New repository secret</strong>. Add:</p>
           <ul>
             <li><code>AWS_DEPLOY_ROLE_ARN</code> → the <code>DeployRoleArn</code> from your CDK outputs</li>
             <li><code>AWS_REGION</code> → <code>eu-west-1</code> (or your region)</li>
+            <li><code>GOOGLE_CLIENT_ID</code> → your Google OAuth Client ID (e.g. <code>xxxxxx.apps.googleusercontent.com</code>)</li>
           </ul>
+          <p class="step-desc">The deploy workflow uses these to: assume the AWS deploy role, set the region, and pass the Client ID to CDK (for the Lambda) and Vite (for the frontend build).</p>
         </div>
       </div>
 
       <!-- Trigger deploy -->
-      <div class="step" id="step-s6-trigger">
-        <input type="checkbox" id="cb-s6-trigger">
+      <div class="step" id="step-s7-trigger">
+        <input type="checkbox" id="cb-s7-trigger">
         <div class="step-body">
           <div class="step-title">Push to main to trigger a deploy</div>
           <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>git commit --allow-empty -m "trigger deploy"
 git push</code></pre></div>
-          <p class="step-desc">Go to the <strong>Actions</strong> tab in your GitHub repo. Watch the <strong>Deploy</strong> workflow — it should go green in about 3 minutes.</p>
+          <p class="step-desc">Go to the <strong>Actions</strong> tab in your GitHub repo. Watch the <strong>Deploy</strong> workflow run. It will: deploy the CDK stack, build the Svelte frontend (injecting the API URL from stack outputs), sync the built files to S3, and invalidate the CloudFront cache. Expect about 5 minutes total.</p>
         </div>
       </div>
     </section>
 
     <!-- ================================================================ -->
-    <!-- SECTION 7: Verify                                                 -->
+    <!-- SECTION 8: Verify                                                 -->
     <!-- ================================================================ -->
-    <section id="s7">
-      <h2><span class="badge" id="badge-s7">7</span> Verify Everything</h2>
+    <section id="s8">
+      <h2><span class="badge" id="badge-s8">8</span> Verify Everything</h2>
 
       <!-- Test API -->
-      <div class="step" id="step-s7-api">
-        <input type="checkbox" id="cb-s7-api">
+      <div class="step" id="step-s8-api">
+        <input type="checkbox" id="cb-s8-api">
         <div class="step-body">
           <div class="step-title">Hit the health check</div>
           <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>curl https://YOUR_API_URL/</code></pre></div>
@@ -923,20 +1007,19 @@ git push</code></pre></div>
         </div>
       </div>
 
-      <!-- Upload test -->
-      <div class="step" id="step-s7-upload">
-        <input type="checkbox" id="cb-s7-upload">
+      <!-- Frontend live -->
+      <div class="step" id="step-s8-frontend">
+        <input type="checkbox" id="cb-s8-frontend">
         <div class="step-body">
-          <div class="step-title">Upload a file and open the link</div>
-          <p class="step-desc">Serve the frontend locally and upload a file:</p>
-          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>npx http-server . -p 8080 -c-1</code></pre></div>
-          <p class="step-desc">Open <a href="http://localhost:8080/app.html" target="_blank">http://localhost:8080/app.html</a>, drag an HTML file onto the drop zone, and click the returned link — it should render in your browser.</p>
+          <div class="step-title">Open the live frontend</div>
+          <p class="step-desc">After GitHub Actions finishes, your Svelte frontend should be live at the <code>FrontendUrl</code> from your CDK outputs (e.g. <code>https://xxxxxxxxxxxx.cloudfront.net</code>). Open it in a browser — you should see the hostahtml sign-in page.</p>
+          <p class="step-desc">Sign in with your Google account. Then drag an HTML file onto the drop zone — you should get a 7-day pre-signed link back. Click it to confirm the page renders.</p>
         </div>
       </div>
 
       <!-- CloudWatch -->
-      <div class="step" id="step-s7-logs">
-        <input type="checkbox" id="cb-s7-logs">
+      <div class="step" id="step-s8-logs">
+        <input type="checkbox" id="cb-s8-logs">
         <div class="step-body">
           <div class="step-title">Check CloudWatch Logs</div>
           <p class="step-desc">In the AWS Console, go to <strong>CloudWatch → Log groups</strong> and find <code>/aws/lambda/HostahtmlStack-ApiFunction...</code>. You should see the upload logged there.</p>
@@ -950,8 +1033,8 @@ git push</code></pre></div>
       </div>
 
       <!-- S3 Console -->
-      <div class="step" id="step-s7-s3">
-        <input type="checkbox" id="cb-s7-s3">
+      <div class="step" id="step-s8-s3">
+        <input type="checkbox" id="cb-s8-s3">
         <div class="step-body">
           <div class="step-title">Check S3 in the console</div>
           <p class="step-desc">In the AWS Console, go to <strong>S3</strong> and find your <code>hostahtml-uploads-...</code> bucket. You should see the files you uploaded.</p>

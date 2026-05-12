@@ -1,10 +1,10 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { GetObjectCommand } from "@aws-sdk/client-s3";
 
 const s3 = new S3Client({});
 const BUCKET = process.env.BUCKET_NAME!;
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
 const SEVEN_DAYS = 7 * 24 * 60 * 60;
 
 export const handler = async (
@@ -18,9 +18,20 @@ export const handler = async (
   }
 
   if (method === "POST" && path === "/upload") {
+    const authHeader = event.headers["authorization"] ?? "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+    if (!token) return err(401, "Missing token");
+
+    let userId: string;
+    try {
+      userId = await verifyGoogleToken(token);
+    } catch (e) {
+      return err(401, "Invalid token");
+    }
+
     const originalName = event.queryStringParameters?.filename ?? "upload.html";
     const safeFilename = originalName.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const key = `${Date.now()}-${safeFilename}`;
+    const key = `${userId}/${Date.now()}-${safeFilename}`;
 
     const body = event.isBase64Encoded
       ? Buffer.from(event.body ?? "", "base64")
@@ -45,9 +56,23 @@ export const handler = async (
     return ok({ url, key, expiresInDays: 7 });
   }
 
-  return { statusCode: 404, body: JSON.stringify({ error: "Not found" }) };
+  return err(404, "Not found");
 };
+
+async function verifyGoogleToken(token: string): Promise<string> {
+  const res = await fetch(
+    `https://oauth2.googleapis.com/tokeninfo?id_token=${token}`
+  );
+  if (!res.ok) throw new Error("tokeninfo failed");
+  const info = (await res.json()) as { aud?: string; sub?: string };
+  if (info.aud !== GOOGLE_CLIENT_ID) throw new Error("wrong audience");
+  return info.sub!;
+}
 
 function ok(body: object): APIGatewayProxyResultV2 {
   return { statusCode: 200, body: JSON.stringify(body) };
+}
+
+function err(status: number, message: string): APIGatewayProxyResultV2 {
+  return { statusCode: status, body: JSON.stringify({ error: message }) };
 }

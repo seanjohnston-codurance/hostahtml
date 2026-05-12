@@ -5,6 +5,8 @@ import * as lambdaNode from "aws-cdk-lib/aws-lambda-nodejs";
 import * as apigwv2 from "aws-cdk-lib/aws-apigatewayv2";
 import * as apigwv2Integrations from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
+import * as cloudfrontOrigins from "aws-cdk-lib/aws-cloudfront-origins";
 import { Construct } from "constructs";
 import * as path from "path";
 
@@ -12,14 +14,54 @@ export class HostahtmlStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // ── S3 bucket ──────────────────────────────────────────────────────────────
-    // Private bucket — uploaded files are accessed via pre-signed URLs
+    const googleClientId =
+      this.node.tryGetContext("googleClientId") ?? "REPLACE_WITH_GOOGLE_CLIENT_ID";
+
+    // ── Uploads bucket ─────────────────────────────────────────────────────────
     const uploadsBucket = new s3.Bucket(this, "UploadsBucket", {
       bucketName: `hostahtml-uploads-${this.account}-${this.region}`,
       versioned: true,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
+
+    // ── Frontend bucket + CloudFront ───────────────────────────────────────────
+    const frontendBucket = new s3.Bucket(this, "FrontendBucket", {
+      bucketName: `hostahtml-frontend-${this.account}-${this.region}`,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+    });
+
+    const distribution = new cloudfront.Distribution(
+      this,
+      "FrontendDistribution",
+      {
+        defaultBehavior: {
+          origin:
+            cloudfrontOrigins.S3BucketOrigin.withOriginAccessControl(
+              frontendBucket
+            ),
+          viewerProtocolPolicy:
+            cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        },
+        defaultRootObject: "index.html",
+        // SPA: serve index.html for any 403/404 so client-side routing works
+        errorResponses: [
+          {
+            httpStatus: 403,
+            responseHttpStatus: 200,
+            responsePagePath: "/index.html",
+          },
+          {
+            httpStatus: 404,
+            responseHttpStatus: 200,
+            responsePagePath: "/index.html",
+          },
+        ],
+        priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
+      }
+    );
 
     // ── Lambda ─────────────────────────────────────────────────────────────────
     const apiFunction = new lambdaNode.NodejsFunction(this, "ApiFunction", {
@@ -30,6 +72,7 @@ export class HostahtmlStack extends cdk.Stack {
       memorySize: 256,
       environment: {
         BUCKET_NAME: uploadsBucket.bucketName,
+        GOOGLE_CLIENT_ID: googleClientId,
       },
       bundling: {
         minify: true,
@@ -49,7 +92,7 @@ export class HostahtmlStack extends cdk.Stack {
           apigwv2.CorsHttpMethod.POST,
           apigwv2.CorsHttpMethod.OPTIONS,
         ],
-        allowHeaders: ["content-type"],
+        allowHeaders: ["content-type", "authorization"],
       },
     });
 
@@ -71,12 +114,10 @@ export class HostahtmlStack extends cdk.Stack {
     });
 
     // ── GitHub Actions OIDC ────────────────────────────────────────────────────
-    // Replace githubOwner in cdk.json with your GitHub username before deploying.
     const githubOwner =
       this.node.tryGetContext("githubOwner") ??
       "REPLACE_WITH_YOUR_GITHUB_USERNAME";
-    const githubRepo =
-      this.node.tryGetContext("githubRepo") ?? "hostahtml";
+    const githubRepo = this.node.tryGetContext("githubRepo") ?? "hostahtml";
 
     const githubProvider = new iam.OpenIdConnectProvider(
       this,
@@ -87,7 +128,6 @@ export class HostahtmlStack extends cdk.Stack {
       }
     );
 
-    // Scoped to pushes to main on this specific repo only
     const deployRole = new iam.Role(this, "GithubDeployRole", {
       assumedBy: new iam.WebIdentityPrincipal(
         githubProvider.openIdConnectProviderArn,
@@ -100,8 +140,6 @@ export class HostahtmlStack extends cdk.Stack {
           },
         }
       ),
-      // AdministratorAccess is acceptable for a personal playground account.
-      // Scope this down before using in a shared or production environment.
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess"),
       ],
@@ -110,10 +148,20 @@ export class HostahtmlStack extends cdk.Stack {
     // ── Outputs ────────────────────────────────────────────────────────────────
     new cdk.CfnOutput(this, "ApiUrl", {
       value: httpApi.apiEndpoint,
-      description: "API Gateway URL — paste this into app.html",
+      description: "API Gateway URL",
     });
     new cdk.CfnOutput(this, "BucketName", {
       value: uploadsBucket.bucketName,
+    });
+    new cdk.CfnOutput(this, "FrontendBucketName", {
+      value: frontendBucket.bucketName,
+    });
+    new cdk.CfnOutput(this, "DistributionId", {
+      value: distribution.distributionId,
+    });
+    new cdk.CfnOutput(this, "FrontendUrl", {
+      value: `https://${distribution.distributionDomainName}`,
+      description: "CloudFront URL for the frontend",
     });
     new cdk.CfnOutput(this, "DeployRoleArn", {
       value: deployRole.roleArn,
