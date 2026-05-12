@@ -64,9 +64,13 @@
       }
     },
     {
-      "Sid": "CDKBootstrapLookup",
+      "Sid": "CDKBootstrapSSM",
       "Effect": "Allow",
-      "Action": "ssm:GetParameter",
+      "Action": [
+        "ssm:GetParameter",
+        "ssm:PutParameter",
+        "ssm:DeleteParameter"
+      ],
       "Resource": "arn:aws:ssm:*:*:parameter/cdk-bootstrap/*"
     },
     {

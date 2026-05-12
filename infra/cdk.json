@@ -3,7 +3,7 @@
   "context": {
     "@aws-cdk/aws-apigateway:usagePlanKeyOrderInsensitiveId": true,
     "@aws-cdk/core:stackRelativeExports": true,
-    "githubOwner": "REPLACE_WITH_YOUR_GITHUB_USERNAME",
+    "githubOwner": "seanjohnston-codurance",
     "githubRepo": "hostahtml"
   }
 }
