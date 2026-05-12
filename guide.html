@@ -677,11 +677,10 @@ cdk --version    # 2.x.x</code></pre></div>
           <p class="step-desc">You should see the UK Playground account ID and an ARN ending in <code>user/hostahtml</code>. If you get an error, double-check the keys were copied correctly.</p>
           <div class="callout info">
             <strong>💡 Skip --profile on every command</strong>
-            Both <code>aws</code> and <code>cdk</code> respect the <code>AWS_PROFILE</code> environment variable. Use <strong>direnv</strong> to set it automatically whenever you're in this directory:
-            <div class="code-wrap" style="margin-top:8px;"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>brew install direnv
-echo 'export AWS_PROFILE=hostahtml' > .envrc
-direnv allow</code></pre></div>
-            Add <code>direnv hook bash | source</code> (or the fish/zsh equivalent) to your shell config. After that, <code>cdk deploy</code> and <code>aws s3 ls</code> work without any <code>--profile</code> flag. The <code>.envrc</code> file is gitignored — each developer sets their own.
+            Both <code>aws</code> and <code>cdk</code> respect the <code>AWS_PROFILE</code> environment variable. Use <strong>mise</strong> to set it automatically whenever you're in this directory:
+            <div class="code-wrap" style="margin-top:8px;"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>echo -e '[env]\nAWS_PROFILE = "hostahtml"' > .mise.toml
+mise trust</code></pre></div>
+            After that, <code>cdk deploy</code> and <code>aws s3 ls</code> work without any <code>--profile</code> flag whenever you're in this directory. The <code>.mise.toml</code> is committed to the repo — cloning it gives everyone the right profile automatically.
           </div>
         </div>
       </div>
@@ -795,19 +794,27 @@ cdk bootstrap aws://123456789012/eu-west-1 --profile hostahtml</code></pre></div
     <section id="s5">
       <h2><span class="badge" id="badge-s5">5</span> Google OAuth Setup</h2>
 
-      <p class="step-desc" style="margin-bottom: 16px;">The frontend uses Google Sign-In to identify users. You need a Google OAuth 2.0 Client ID before deploying — it gets baked into both the Lambda (for token verification) and the frontend (for the sign-in button).</p>
+      <p class="step-desc" style="margin-bottom: 16px;">The frontend uses Google Sign-In to identify users. You need a Google OAuth 2.0 Client ID before deploying — it gets baked into both the Lambda (for token verification) and the frontend (for the sign-in button). This takes about 10 minutes on first time through.</p>
 
       <div class="callout info">
-        <strong>ℹ️ This uses your existing Google Workspace account</strong>
-        You need a Google Cloud project to issue OAuth credentials. If your organisation already has one you can use, great — just make sure you can create credentials in it. Otherwise create a new free personal project.
+        <strong>ℹ️ What is a Google Cloud project?</strong>
+        OAuth credentials live inside a Google Cloud project — Google's way of grouping resources and billing. You don't need to use any GCP services or pay anything; you just need a project as a container for the credentials. If your org already has a GCP project you can create credentials in, use that. Otherwise create a new free one.
       </div>
 
-      <!-- Create project -->
+      <!-- Find or create project -->
       <div class="step" id="step-s5-project">
         <input type="checkbox" id="cb-s5-project">
         <div class="step-body">
-          <div class="step-title">Go to Google Cloud Console and create a project</div>
-          <p class="step-desc">Open <a href="https://console.cloud.google.com" target="_blank" rel="noopener">console.cloud.google.com</a>. In the top-left project picker, click <strong>New Project</strong>. Give it a name (e.g. <code>hostahtml</code>) and click <strong>Create</strong>.</p>
+          <div class="step-title">Open Google Cloud Console and select or create a project</div>
+          <p class="step-desc">Go to <a href="https://console.cloud.google.com" target="_blank" rel="noopener">console.cloud.google.com</a>. Sign in with your work Google account.</p>
+          <p class="step-desc">In the top-left, next to the Google Cloud logo, you'll see a project name (or "Select a project"). Click it — a picker opens. If you see an existing project you can use, select it. Otherwise:</p>
+          <ol>
+            <li>Click <strong>New Project</strong> (top-right of the picker)</li>
+            <li><strong>Project name:</strong> <code>hostahtml</code></li>
+            <li><strong>Organization:</strong> if you're logged in with a Google Workspace account you'll see your org here — leave it selected so the project lives under your org. If you want a personal project instead, select "No organization".</li>
+            <li>Click <strong>Create</strong> and wait a few seconds for it to provision</li>
+            <li>The project picker at the top should now show your new project — click it to switch to it if it isn't already selected</li>
+          </ol>
         </div>
       </div>
 
@@ -815,14 +822,27 @@ cdk bootstrap aws://123456789012/eu-west-1 --profile hostahtml</code></pre></div
       <div class="step" id="step-s5-consent">
         <input type="checkbox" id="cb-s5-consent">
         <div class="step-body">
-          <div class="step-title">Configure the OAuth consent screen</div>
-          <p class="step-desc">Go to <strong>APIs &amp; Services → OAuth consent screen</strong>. Select <strong>External</strong> and click Create. Fill in:</p>
+          <div class="step-title">Configure the Google Auth Platform</div>
+          <p class="step-desc">In the left nav go to <strong>APIs &amp; Services → OAuth consent screen</strong>. You'll land on a page that says <em>"Google auth platform not configured yet"</em> with a <strong>Get started</strong> button. Click it — this is a one-time initialisation step for the project.</p>
+          <p class="step-desc">A setup form appears. Fill it in:</p>
           <ul>
-            <li><strong>App name:</strong> hostahtml</li>
-            <li><strong>User support email:</strong> your email</li>
-            <li><strong>Developer contact email:</strong> your email</li>
+            <li><strong>App name:</strong> <code>hostahtml</code></li>
+            <li><strong>User support email:</strong> select your email from the dropdown</li>
           </ul>
-          <p class="step-desc">Click <strong>Save and Continue</strong> through the remaining steps (Scopes and Test users can be left empty). Back on the consent screen, if it shows <strong>Publishing status: Testing</strong>, click <strong>Publish App → Confirm</strong> so any Google account can sign in (not just manually-added test users).</p>
+          <p class="step-desc">Next, choose an <strong>Audience</strong>:</p>
+          <ul>
+            <li><strong>Internal</strong> — only accounts in your Google Workspace org can sign in. No verification or publishing step needed. <em>Use this if hostahtml is a company-internal tool.</em></li>
+            <li><strong>External</strong> — any Google account can sign in. Requires a publishing step (see below). <em>Use this if you want people outside your org to be able to sign in, or if you're using a personal Gmail.</em></li>
+          </ul>
+          <div class="callout info">
+            <strong>💡 If you have a Workspace account, pick Internal</strong>
+            It skips the publishing requirement entirely and naturally restricts access to your org. If you're not sure which org your account is in, check the domain of your email — if it's your company domain (not gmail.com), you're on Workspace and Internal will work.
+          </div>
+          <p class="step-desc">Scroll down to <strong>Contact information</strong> and enter your email address. Agree to the terms and click <strong>Continue</strong>, then <strong>Create</strong>.</p>
+          <div class="callout warning" style="margin-top: 8px;">
+            <strong>External only: publish the app</strong>
+            If you chose External, you'll land on a dashboard showing <strong>Publishing status: Testing</strong>. In Testing mode only manually-added test users can sign in and tokens expire after 7 days. Click <strong>Publish App → Confirm</strong> to make it production. (Google won't manually review it just for Sign-In — verification is only required for sensitive scopes, which we don't use.)
+          </div>
         </div>
       </div>
 
@@ -831,16 +851,19 @@ cdk bootstrap aws://123456789012/eu-west-1 --profile hostahtml</code></pre></div
         <input type="checkbox" id="cb-s5-credentials">
         <div class="step-body">
           <div class="step-title">Create an OAuth 2.0 Client ID</div>
-          <p class="step-desc">Go to <strong>APIs &amp; Services → Credentials → Create Credentials → OAuth client ID</strong>. Set:</p>
+          <p class="step-desc">In the left nav go to <strong>APIs &amp; Services → Credentials</strong>. Click <strong>+ Create Credentials → OAuth client ID</strong>.</p>
+          <p class="step-desc">Fill in:</p>
           <ul>
-            <li><strong>Application type:</strong> Web application</li>
-            <li><strong>Name:</strong> hostahtml</li>
-            <li><strong>Authorized JavaScript origins:</strong> add <code>http://localhost:5173</code> (for local dev)</li>
+            <li><strong>Application type:</strong> <code>Web application</code></li>
+            <li><strong>Name:</strong> <code>hostahtml</code></li>
+            <li><strong>Authorized JavaScript origins:</strong> click <strong>+ Add URI</strong> and enter <code>http://localhost:5173</code></li>
           </ul>
-          <p class="step-desc">Click <strong>Create</strong>. A dialog shows your Client ID — it ends in <code>.apps.googleusercontent.com</code>. Copy it.</p>
+          <p class="step-desc">Leave <strong>Authorized redirect URIs</strong> empty — Google Sign-In with Identity Services doesn't use redirects.</p>
+          <p class="step-desc">Click <strong>Create</strong>. A dialog appears showing your new credentials. The <strong>Client ID</strong> is the long string ending in <code>.apps.googleusercontent.com</code>. Copy it — you'll need it in the next step.</p>
           <div class="callout info" style="margin-top: 8px;">
-            <strong>💡 Client IDs are not secrets.</strong> They're safe to put in environment variables and will be visible in the compiled frontend JavaScript. The actual verification happens server-side in the Lambda.
+            <strong>💡 The Client ID is not a secret.</strong> It will be visible in the compiled frontend JavaScript that anyone can read. That's fine — it's a public identifier, not a key. The security comes from the server-side token verification in Lambda, which confirms the token was issued for your specific Client ID.
           </div>
+          <p class="step-desc">If you close the dialog without copying, you can find the Client ID again under <strong>APIs &amp; Services → Credentials</strong> — click the pencil icon next to your OAuth 2.0 Client ID.</p>
         </div>
       </div>
 
@@ -848,10 +871,15 @@ cdk bootstrap aws://123456789012/eu-west-1 --profile hostahtml</code></pre></div
       <div class="step" id="step-s5-save">
         <input type="checkbox" id="cb-s5-save">
         <div class="step-body">
-          <div class="step-title">Save the Client ID to your .envrc</div>
-          <p class="step-desc">Add it to your direnv file so you can reference it in deploy commands:</p>
-          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>echo 'export GOOGLE_CLIENT_ID=YOUR_CLIENT_ID.apps.googleusercontent.com' >> .envrc
-direnv allow</code></pre></div>
+          <div class="step-title">Add the Client ID to .mise.toml and verify it loads</div>
+          <p class="step-desc">Open <code>.mise.toml</code> in the project root and add the Client ID under the <code>[env]</code> section:</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">toml</span></div><pre><code>[env]
+AWS_PROFILE = "hostahtml"
+GOOGLE_CLIENT_ID = "YOUR_CLIENT_ID.apps.googleusercontent.com"</code></pre></div>
+          <p class="step-desc">Replace <code>YOUR_CLIENT_ID</code> with the value you copied. Then trust the file and verify:</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>mise trust
+echo $GOOGLE_CLIENT_ID</code></pre></div>
+          <p class="step-desc">You should see your Client ID printed. Since <code>.mise.toml</code> is committed to the repo, anyone who clones it gets both variables automatically after running <code>mise trust</code> once.</p>
         </div>
       </div>
     </section>
