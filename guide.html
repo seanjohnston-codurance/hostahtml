@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>hostahtml — AWS Setup Guide</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-secondary: #f6f8fa;
+      --text: #24292f;
+      --text-muted: #57606a;
+      --border: #d0d7de;
+      --code-bg: #f6f8fa;
+      --accent: #c7821a;
+      --accent-dim: #fff8eb;
+      --success: #1a7f37;
+      --success-bg: #dafbe1;
+      --warning-bg: #fff8c5;
+      --warning-border: #d4a72c;
+      --info-bg: #ddf4ff;
+      --info-border: #54aeff;
+      --nav-width: 220px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --bg-secondary: #161b22;
+        --text: #c9d1d9;
+        --text-muted: #8b949e;
+        --border: #30363d;
+        --code-bg: #161b22;
+        --accent: #f0b429;
+        --accent-dim: #1a1200;
+        --success: #3fb950;
+        --success-bg: #0d2119;
+        --warning-bg: #1f1c00;
+        --warning-border: #9e6a03;
+        --info-bg: #031d2e;
+        --info-border: #1f6feb;
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── Progress bar ──────────────────────────────────────────────────────── */
+    #progress-container {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    #progress-track {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    #progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+    #progress-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      min-width: 120px;
+      text-align: right;
+    }
+
+    /* ── Layout ────────────────────────────────────────────────────────────── */
+    .layout {
+      display: grid;
+      grid-template-columns: var(--nav-width) 1fr;
+      max-width: 1060px;
+      margin: 0 auto;
+    }
+    @media (max-width: 740px) {
+      .layout { grid-template-columns: 1fr; }
+      #sidebar { display: none; }
+    }
+
+    /* ── Sidebar ───────────────────────────────────────────────────────────── */
+    #sidebar {
+      border-right: 1px solid var(--border);
+      padding: 28px 0 40px;
+      position: sticky;
+      top: 39px;
+      height: calc(100vh - 39px);
+      overflow-y: auto;
+    }
+    #sidebar ul { list-style: none; }
+    .nav-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      padding: 16px 20px 6px;
+    }
+    #sidebar a {
+      display: block;
+      padding: 7px 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      transition: color 0.12s, border-color 0.12s, background 0.12s;
+    }
+    #sidebar a:hover { color: var(--text); background: var(--bg-secondary); }
+    #sidebar a.active { color: var(--accent); border-left-color: var(--accent); background: var(--bg-secondary); }
+    #sidebar a.done { opacity: 0.45; text-decoration: line-through; }
+    .sidebar-footer {
+      padding: 24px 20px 0;
+      border-top: 1px solid var(--border);
+      margin-top: 16px;
+    }
+    .reset-btn {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 5px 12px;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.12s;
+    }
+    .reset-btn:hover { border-color: #cf222e; color: #cf222e; }
+
+    /* ── Main ──────────────────────────────────────────────────────────────── */
+    main {
+      padding: 40px 48px 80px;
+      min-width: 0;
+    }
+    @media (max-width: 740px) {
+      main { padding: 24px 18px 60px; }
+    }
+
+    /* ── Page header ───────────────────────────────────────────────────────── */
+    .page-header {
+      margin-bottom: 40px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .page-header h1 span { color: var(--accent); }
+    .page-header p { color: var(--text-muted); font-size: 14px; }
+
+    /* ── Sections ──────────────────────────────────────────────────────────── */
+    section {
+      margin-bottom: 52px;
+      scroll-margin-top: 56px;
+    }
+    section h2 {
+      font-size: 19px;
+      font-weight: 600;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    section.s-done .badge {
+      background: var(--success);
+      border-color: var(--success);
+      color: #fff;
+    }
+
+    /* ── Steps ─────────────────────────────────────────────────────────────── */
+    .step {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      align-items: flex-start;
+    }
+    .step input[type="checkbox"] {
+      margin-top: 3px;
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .step-body { flex: 1; min-width: 0; }
+    .step-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .step.step-done .step-title {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+    .step-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .step-desc:last-child { margin-bottom: 0; }
+
+    /* ── Code blocks ───────────────────────────────────────────────────────── */
+    .code-wrap {
+      position: relative;
+      margin: 10px 0;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 12px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+    .code-lang { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+    .copy-btn {
+      font-size: 11px;
+      padding: 2px 9px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .copy-btn.copied { color: var(--success); border-color: var(--success); }
+    pre {
+      padding: 14px 16px;
+      font-size: 13px;
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+      background: var(--code-bg);
+      overflow-x: auto;
+      line-height: 1.55;
+      tab-size: 2;
+    }
+    code {
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+    }
+    p code, li code {
+      font-size: 0.88em;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 5px;
+    }
+
+    /* ── Callouts ──────────────────────────────────────────────────────────── */
+    .callout {
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin: 14px 0;
+      font-size: 14px;
+    }
+    .callout.warning {
+      background: var(--warning-bg);
+      border: 1px solid var(--warning-border);
+    }
+    .callout.info {
+      background: var(--info-bg);
+      border: 1px solid var(--info-border);
+    }
+    .callout strong { display: block; margin-bottom: 4px; }
+
+    /* ── Azure equivalent panels ───────────────────────────────────────────── */
+    details.azure {
+      margin-top: 10px;
+      border: 1px solid var(--info-border);
+      border-radius: 6px;
+      background: var(--info-bg);
+    }
+    details.azure summary {
+      padding: 8px 14px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--info-border);
+      font-weight: 500;
+      user-select: none;
+      list-style: none;
+    }
+    details.azure summary::-webkit-details-marker { display: none; }
+    details.azure summary::before { content: "▶ "; font-size: 10px; }
+    details.azure[open] summary::before { content: "▼ "; }
+    .azure-body {
+      padding: 10px 14px 12px;
+      font-size: 13px;
+      border-top: 1px solid var(--info-border);
+    }
+    .azure-body p { margin-bottom: 6px; }
+    .azure-body p:last-child { margin-bottom: 0; }
+    .azure-body code {
+      font-size: 0.88em;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 4px;
+    }
+
+    /* ── Platform tabs ─────────────────────────────────────────────────────── */
+    .tabs { margin: 10px 0; }
+    .tab-btns { display: flex; border-bottom: 1px solid var(--border); gap: 0; }
+    .tab-btn {
+      padding: 6px 16px;
+      font-size: 13px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.12s;
+    }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-pane { display: none; padding-top: 10px; }
+    .tab-pane.active { display: block; }
+
+    /* ── Typography ────────────────────────────────────────────────────────── */
+    p { margin-bottom: 10px; font-size: 14px; }
+    p:last-child { margin-bottom: 0; }
+    ul, ol { padding-left: 20px; margin-bottom: 10px; }
+    li { margin-bottom: 5px; font-size: 14px; }
+    a { color: var(--accent); }
+    a:hover { text-decoration: underline; }
+    strong { font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<!-- ── Progress bar ────────────────────────────────────────────────────────── -->
+<div id="progress-container">
+  <div id="progress-track"><div id="progress-fill"></div></div>
+  <span id="progress-text">0 / 0 complete</span>
+</div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+  <nav id="sidebar">
+    <div class="nav-label">Sections</div>
+    <ul>
+      <li><a href="#s1" id="nav-s1">1. Prerequisites</a></li>
+      <li><a href="#s2" id="nav-s2">2. CLI Credentials</a></li>
+      <li><a href="#s3" id="nav-s3">3. Clone &amp; Install</a></li>
+      <li><a href="#s4" id="nav-s4">4. Bootstrap CDK</a></li>
+      <li><a href="#s5" id="nav-s5">5. Deploy Manually</a></li>
+      <li><a href="#s6" id="nav-s6">6. GitHub Actions</a></li>
+      <li><a href="#s7" id="nav-s7">7. Verify</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <button class="reset-btn" onclick="resetProgress()">Reset progress</button>
+    </div>
+  </nav>
+
+  <!-- ── Content ─────────────────────────────────────────────────────────── -->
+  <main>
+    <div class="page-header">
+      <h1>Deploy <span>hostahtml</span> to AWS</h1>
+      <p>A step-by-step guide for Azure developers. Tick each step as you go — progress is saved to this browser.</p>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- SECTION 1: Prerequisites                                          -->
+    <!-- ================================================================ -->
+    <section id="s1">
+      <h2><span class="badge" id="badge-s1">1</span> Prerequisites</h2>
+
+      <!-- Node.js -->
+      <div class="step" id="step-s1-node">
+        <input type="checkbox" id="cb-s1-node">
+        <div class="step-body">
+          <div class="step-title">Install Node.js 20+</div>
+          <p class="step-desc">Node powers both your TypeScript app and the CDK toolkit.</p>
+          <div class="tabs">
+            <div class="tab-btns">
+              <button class="tab-btn active" onclick="tab(this,'node-mac')">macOS</button>
+              <button class="tab-btn" onclick="tab(this,'node-win')">Windows</button>
+              <button class="tab-btn" onclick="tab(this,'node-linux')">Linux</button>
+            </div>
+            <div id="node-mac" class="tab-pane active">
+              <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>brew install node@20</code></pre></div>
+              <p class="step-desc">No Homebrew? Install it from <a href="https://brew.sh" target="_blank">brew.sh</a> first, or use nvm below.</p>
+            </div>
+            <div id="node-win" class="tab-pane">
+              <div class="code-wrap"><div class="code-header"><span class="code-lang">powershell</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>winget install OpenJS.NodeJS.LTS</code></pre></div>
+            </div>
+            <div id="node-linux" class="tab-pane">
+              <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code># via fnm (recommended)
+curl -fsSL https://fnm.vercel.app/install | bash
+fnm install 20 && fnm use 20</code></pre></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AWS CLI -->
+      <div class="step" id="step-s1-cli">
+        <input type="checkbox" id="cb-s1-cli">
+        <div class="step-body">
+          <div class="step-title">Install AWS CLI v2</div>
+          <p class="step-desc">The AWS CLI is your <code>az</code>. You use it to authenticate, inspect resources, and run CDK commands.</p>
+          <div class="tabs">
+            <div class="tab-btns">
+              <button class="tab-btn active" onclick="tab(this,'cli-mac')">macOS</button>
+              <button class="tab-btn" onclick="tab(this,'cli-win')">Windows</button>
+              <button class="tab-btn" onclick="tab(this,'cli-linux')">Linux</button>
+            </div>
+            <div id="cli-mac" class="tab-pane active">
+              <p class="step-desc">Use the official installer — <strong>not</strong> <code>brew install awscli</code>. Homebrew pulls in Python 3.14 as a dependency, which has a known conflict with macOS's bundled <code>libexpat</code> and will crash on every <code>aws</code> command.</p>
+              <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o /tmp/AWSCLIV2.pkg
+sudo installer -pkg /tmp/AWSCLIV2.pkg -target /</code></pre></div>
+              <p class="step-desc">If you already installed via Homebrew and are seeing a <code>Symbol not found: _XML_SetAllocTrackerActivationThreshold</code> error, uninstall it first: <code>brew uninstall awscli</code>, then run the commands above.</p>
+            </div>
+            <div id="cli-win" class="tab-pane">
+              <p class="step-desc">Download and run the <a href="https://awscli.amazonaws.com/AWSCLIV2.msi" target="_blank">AWS CLI v2 MSI installer</a>.</p>
+            </div>
+            <div id="cli-linux" class="tab-pane">
+              <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip && sudo ./aws/install</code></pre></div>
+            </div>
+          </div>
+          <details class="azure">
+            <summary>Azure equivalent</summary>
+            <div class="azure-body">
+              <p>This is the AWS version of the <code>az</code> CLI. Same idea — authenticate your terminal and manage cloud resources from the command line. Commands look like <code>aws s3 ls</code> instead of <code>az storage blob list</code>.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- CDK -->
+      <div class="step" id="step-s1-cdk">
+        <input type="checkbox" id="cb-s1-cdk">
+        <div class="step-body">
+          <div class="step-title">Install AWS CDK and ts-node</div>
+          <p class="step-desc">CDK lets you define AWS infrastructure in TypeScript instead of YAML. <code>ts-node</code> lets CDK run your TypeScript code directly.</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>npm install -g aws-cdk ts-node</code></pre></div>
+          <details class="azure">
+            <summary>Azure equivalent</summary>
+            <div class="azure-body">
+              <p>CDK is TypeScript-first infrastructure-as-code — similar to Pulumi. You write real code (not YAML), and CDK turns it into CloudFormation templates behind the scenes. Think of it as Pulumi for AWS, or Bicep if you prefer the analogy to a declarative approach — but with actual TypeScript types and IDE autocomplete.</p>
+              <p>CloudFormation (what CDK generates) is AWS's equivalent of ARM / Bicep. You rarely write CloudFormation directly — CDK does it for you.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- Verify -->
+      <div class="step" id="step-s1-verify">
+        <input type="checkbox" id="cb-s1-verify">
+        <div class="step-body">
+          <div class="step-title">Verify your installs</div>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>node --version   # v20.x.x or later
+aws --version    # aws-cli/2.x.x
+cdk --version    # 2.x.x</code></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- SECTION 2: Create IAM credentials                                 -->
+    <!-- ================================================================ -->
+    <section id="s2">
+      <h2><span class="badge" id="badge-s2">2</span> Create CLI Credentials</h2>
+
+      <div class="callout info">
+        <strong>🏢 Company account — check before creating anything</strong>
+        UK Playground is shared. Before creating an IAM user, check IAM → Users to see if one already exists for you, and ask whoever manages your AWS setup how developers are expected to get access. Many companies use IAM Identity Center (SSO) — if that's the case here, the setup is browser-based login rather than access keys (see the collapsible below).
+      </div>
+
+      <!-- Switch to UK Playground -->
+      <div class="step" id="step-s2-switch">
+        <input type="checkbox" id="cb-s2-switch">
+        <div class="step-body">
+          <div class="step-title">Switch to the UK Playground account in the Console</div>
+          <p class="step-desc">In the AWS Console, click your account name in the top-right corner. You should see a <strong>Switch role</strong> option or a list of accounts. Navigate to <strong>UK Playground</strong>.</p>
+          <details class="azure">
+            <summary>Azure equivalent</summary>
+            <div class="azure-body">
+              <p>Same as switching subscriptions in the Azure portal. AWS Organizations groups multiple accounts under one roof; you move between them via Switch Role — equivalent to changing the active subscription.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- Create IAM user -->
+      <div class="step" id="step-s2-user">
+        <input type="checkbox" id="cb-s2-user">
+        <div class="step-body">
+          <div class="step-title">Create an IAM user for this service</div>
+          <p class="step-desc">Go to <strong>IAM → Users → Create user</strong>:</p>
+          <ul>
+            <li><strong>User name:</strong> <code>hostahtml</code></li>
+            <li>Leave <strong>Provide user access to the AWS Management Console</strong> unticked</li>
+            <li>On the permissions step, choose <strong>Attach policies directly → Create policy</strong>, switch to the <strong>JSON</strong> tab, and paste the policy below. Name it <code>hostahtml-deploy</code>.</li>
+          </ul>
+          <p class="step-desc">This covers exactly what CDK needs: CloudFormation, S3, Lambda, API Gateway, the IAM roles CDK creates, and the SSM/ECR/Logs infrastructure CDK bootstrap sets up. The policy is also saved in the repo at <code>infra/iam/hostahtml-deploy-policy.json</code>.</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">json — paste into IAM policy editor</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "CloudFormation",
+      "Effect": "Allow",
+      "Action": "cloudformation:*",
+      "Resource": "*"
+    },
+    {
+      "Sid": "S3",
+      "Effect": "Allow",
+      "Action": "s3:*",
+      "Resource": "*"
+    },
+    {
+      "Sid": "Lambda",
+      "Effect": "Allow",
+      "Action": "lambda:*",
+      "Resource": "*"
+    },
+    {
+      "Sid": "APIGateway",
+      "Effect": "Allow",
+      "Action": "apigateway:*",
+      "Resource": "*"
+    },
+    {
+      "Sid": "IAMForCDKRoles",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateRole",
+        "iam:DeleteRole",
+        "iam:AttachRolePolicy",
+        "iam:DetachRolePolicy",
+        "iam:PutRolePolicy",
+        "iam:DeleteRolePolicy",
+        "iam:GetRole",
+        "iam:GetRolePolicy",
+        "iam:TagRole",
+        "iam:UntagRole",
+        "iam:ListRoleTags",
+        "iam:ListAttachedRolePolicies",
+        "iam:ListRolePolicies",
+        "iam:CreateOpenIDConnectProvider",
+        "iam:DeleteOpenIDConnectProvider",
+        "iam:GetOpenIDConnectProvider",
+        "iam:TagOpenIDConnectProvider"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "IAMPassRole",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "iam:PassedToService": [
+            "lambda.amazonaws.com",
+            "cloudformation.amazonaws.com"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "CDKBootstrapLookup",
+      "Effect": "Allow",
+      "Action": "ssm:GetParameter",
+      "Resource": "arn:aws:ssm:*:*:parameter/cdk-bootstrap/*"
+    },
+    {
+      "Sid": "CDKBootstrapECR",
+      "Effect": "Allow",
+      "Action": "ecr:*",
+      "Resource": "*"
+    },
+    {
+      "Sid": "CloudWatchLogs",
+      "Effect": "Allow",
+      "Action": "logs:*",
+      "Resource": "*"
+    },
+    {
+      "Sid": "CDKBootstrapRoleAssumption",
+      "Effect": "Allow",
+      "Action": "sts:AssumeRole",
+      "Resource": "arn:aws:iam::*:role/cdk-*"
+    }
+  ]
+}</code></pre></div>
+          <details class="azure">
+            <summary>Azure equivalent</summary>
+            <div class="azure-body">
+              <p>An IAM user with access keys = a service principal with a client secret, scoped to a specific app. It's the identity your local CLI uses when deploying this service. CI/CD pipelines use IAM <em>roles</em> via OIDC (already set up in the CDK stack) — this user is only for local <code>cdk deploy</code> runs.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- Create access keys -->
+      <div class="step" id="step-s2-keys">
+        <input type="checkbox" id="cb-s2-keys">
+        <div class="step-body">
+          <div class="step-title">Generate access keys</div>
+          <p class="step-desc">Click into the <code>hostahtml</code> user → <strong>Security credentials</strong> tab → <strong>Create access key</strong>.</p>
+          <ul>
+            <li>Select <strong>Command Line Interface (CLI)</strong> as the use case</li>
+            <li>Click through to the final screen — you'll see an <strong>Access key ID</strong> and a <strong>Secret access key</strong></li>
+            <li>Copy both now — the secret is only shown once</li>
+          </ul>
+          <div class="callout warning">
+            <strong>Keep these safe</strong>
+            These keys authenticate you to AWS. Don't commit them to git, don't paste them in Slack. Store them in a password manager.
+          </div>
+        </div>
+      </div>
+
+      <!-- aws configure -->
+      <div class="step" id="step-s2-configure">
+        <input type="checkbox" id="cb-s2-configure">
+        <div class="step-body">
+          <div class="step-title">Configure the AWS CLI profile</div>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>aws configure --profile hostahtml</code></pre></div>
+          <ul>
+            <li><strong>AWS Access Key ID:</strong> the key ID you just copied</li>
+            <li><strong>AWS Secret Access Key:</strong> the secret you just copied</li>
+            <li><strong>Default region name:</strong> <code>eu-west-2</code> (or your region)</li>
+            <li><strong>Default output format:</strong> <code>json</code></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Verify -->
+      <div class="step" id="step-s2-verify">
+        <input type="checkbox" id="cb-s2-verify">
+        <div class="step-body">
+          <div class="step-title">Verify it works</div>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>aws sts get-caller-identity --profile hostahtml</code></pre></div>
+          <p class="step-desc">You should see the UK Playground account ID and an ARN ending in <code>user/hostahtml</code>. If you get an error, double-check the keys were copied correctly.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- SECTION 3: Clone & Install                                        -->
+    <!-- ================================================================ -->
+    <section id="s3">
+      <h2><span class="badge" id="badge-s3">3</span> Clone &amp; Install</h2>
+
+      <!-- Clone -->
+      <div class="step" id="step-s3-clone">
+        <input type="checkbox" id="cb-s3-clone">
+        <div class="step-body">
+          <div class="step-title">Clone the repo</div>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>git clone https://github.com/YOUR_USERNAME/hostahtml.git
+cd hostahtml</code></pre></div>
+        </div>
+      </div>
+
+      <!-- Install -->
+      <div class="step" id="step-s3-install">
+        <input type="checkbox" id="cb-s3-install">
+        <div class="step-body">
+          <div class="step-title">Install dependencies</div>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>cd infra && npm install</code></pre></div>
+          <p class="step-desc">This installs CDK, the AWS SDK, TypeScript, and esbuild (the bundler that packages your Lambda function).</p>
+        </div>
+      </div>
+
+      <!-- Set github owner -->
+      <div class="step" id="step-s3-github">
+        <input type="checkbox" id="cb-s3-github">
+        <div class="step-body">
+          <div class="step-title">Set your GitHub username in cdk.json</div>
+          <p class="step-desc">Open <code>infra/cdk.json</code> and replace <code>REPLACE_WITH_YOUR_GITHUB_USERNAME</code> with your actual GitHub username:</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">infra/cdk.json (edit this line)</span></div><pre><code>"githubOwner": "your-github-username-here"</code></pre></div>
+          <p class="step-desc">This scopes the GitHub Actions deployment role to your repo only — no-one else's pushes can trigger a deploy to your AWS account.</p>
+        </div>
+      </div>
+
+      <!-- Project structure -->
+      <div class="step" id="step-s3-structure">
+        <input type="checkbox" id="cb-s3-structure">
+        <div class="step-body">
+          <div class="step-title">Understand the project layout</div>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">tree</span></div><pre><code>infra/
+  bin/hostahtml.ts         ← CDK entry point — creates the stack
+  lib/hostahtml-stack.ts   ← Infrastructure definition (Lambda, API, S3, IAM)
+  lambda/handler.ts        ← Your Lambda function code
+  cdk.json                 ← CDK config: how to run the app, context variables
+  tsconfig.json            ← TypeScript config</code></pre></div>
+          <details class="azure">
+            <summary>Azure equivalent</summary>
+            <div class="azure-body">
+              <p><code>bin/hostahtml.ts</code> = the Pulumi <code>index.ts</code> or the entry <code>main.bicep</code> — the top-level entry point that kicks off the deployment.</p>
+              <p><code>lib/hostahtml-stack.ts</code> = the actual resource definitions, like a Bicep module or a Pulumi component.</p>
+              <p><code>cdk.json</code> = Pulumi's <code>Pulumi.yaml</code> — it tells CDK how to run your TypeScript app and stores context variables (like your GitHub username).</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- SECTION 4: Bootstrap CDK                                          -->
+    <!-- ================================================================ -->
+    <section id="s4">
+      <h2><span class="badge" id="badge-s4">4</span> Bootstrap CDK</h2>
+
+      <p class="step-desc" style="margin-bottom: 16px;">Before CDK can deploy anything, it needs a one-time setup in your AWS account: an S3 bucket for deployment assets, an ECR repository for container images, and some IAM roles CDK uses internally. This is done once per AWS account + region.</p>
+
+      <details class="azure">
+        <summary>Azure equivalent</summary>
+        <div class="azure-body">
+          <p>This is like creating a Terraform/Pulumi state backend — a storage container where CDK can stash deployment artefacts and track stack state. Like <code>terraform init</code>, you run it once and then forget about it.</p>
+        </div>
+      </details>
+
+      <!-- Get account ID -->
+      <div class="step" id="step-s4-ids">
+        <input type="checkbox" id="cb-s4-ids">
+        <div class="step-body">
+          <div class="step-title">Get your account ID and region</div>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code># Account ID (12 digits)
+aws sts get-caller-identity --profile hostahtml --query Account --output text
+
+# Region you configured
+aws configure get region --profile hostahtml</code></pre></div>
+          <p class="step-desc">Note both values down — you need them in the next step.</p>
+        </div>
+      </div>
+
+      <!-- Bootstrap -->
+      <div class="step" id="step-s4-bootstrap">
+        <input type="checkbox" id="cb-s4-bootstrap">
+        <div class="step-body">
+          <div class="step-title">Run bootstrap</div>
+          <p class="step-desc">Replace <code>123456789012</code> with your account ID and <code>eu-west-2</code> with your region:</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>cd infra
+cdk bootstrap aws://123456789012/eu-west-2 --profile hostahtml</code></pre></div>
+          <p class="step-desc">Takes about 2 minutes. You'll see <code>✅  Environment aws://...</code> when it's done. You never need to run this again for this account/region.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- SECTION 5: Deploy Manually                                        -->
+    <!-- ================================================================ -->
+    <section id="s5">
+      <h2><span class="badge" id="badge-s5">5</span> Deploy Manually</h2>
+
+      <p class="step-desc" style="margin-bottom: 16px;">Your first deploy. CDK compiles your TypeScript, generates a CloudFormation template, and creates all your AWS resources in one command.</p>
+
+      <!-- Deploy -->
+      <div class="step" id="step-s5-deploy">
+        <input type="checkbox" id="cb-s5-deploy">
+        <div class="step-body">
+          <div class="step-title">Run cdk deploy</div>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>cd infra
+cdk deploy --profile hostahtml</code></pre></div>
+          <p class="step-desc">CDK shows you a list of resources it's about to create and asks for confirmation. Type <code>y</code>. The first deploy takes 3–5 minutes — CDK is compiling your Lambda and standing up API Gateway, S3, and IAM resources.</p>
+          <details class="azure">
+            <summary>Azure equivalent</summary>
+            <div class="azure-body">
+              <p>This is <code>az deployment group create</code> or <code>pulumi up</code>. CDK generates a CloudFormation template and submits it to AWS. CloudFormation is AWS's equivalent of ARM — it's the native resource provisioner, and CDK just writes it for you so you don't have to touch YAML.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- Note outputs -->
+      <div class="step" id="step-s5-outputs">
+        <input type="checkbox" id="cb-s5-outputs">
+        <div class="step-body">
+          <div class="step-title">Copy the stack outputs</div>
+          <p class="step-desc">When deploy finishes, CDK prints outputs. Copy all three — you'll use them in the next steps:</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">example output</span></div><pre><code>Outputs:
+HostahtmlStack.ApiUrl = https://xxxxxxxxxx.execute-api.eu-west-2.amazonaws.com
+HostahtmlStack.BucketName = hostahtml-uploads-123456789012-eu-west-2
+HostahtmlStack.DeployRoleArn = arn:aws:iam::123456789012:role/HostahtmlStack-...</code></pre></div>
+        </div>
+      </div>
+
+      <!-- Test health check -->
+      <div class="step" id="step-s5-curl">
+        <input type="checkbox" id="cb-s5-curl">
+        <div class="step-body">
+          <div class="step-title">Test the API</div>
+          <p class="step-desc">Replace the URL with your <code>ApiUrl</code> output:</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>curl https://xxxxxxxxxx.execute-api.eu-west-2.amazonaws.com/</code></pre></div>
+          <p class="step-desc">Expected response: <code>{"status":"ok"}</code></p>
+        </div>
+      </div>
+
+      <!-- Test upload -->
+      <div class="step" id="step-s5-upload">
+        <input type="checkbox" id="cb-s5-upload">
+        <div class="step-body">
+          <div class="step-title">Test the uploader</div>
+          <p class="step-desc">Open <code>app.html</code> in your browser. Paste your <code>ApiUrl</code> into the API URL field at the top and click Save. Then drag an HTML file onto the drop zone.</p>
+          <div class="callout info">
+            <strong>💡 Need a test file?</strong>
+            <div class="code-wrap" style="margin-top: 8px;"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>echo "&lt;h1&gt;Hello from hostahtml!&lt;/h1&gt;" > test.html</code></pre></div>
+          </div>
+          <p class="step-desc">You should get a pre-signed S3 URL back. Click it — your page should render in the browser. The link is valid for 7 days.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- SECTION 6: GitHub Actions                                         -->
+    <!-- ================================================================ -->
+    <section id="s6">
+      <h2><span class="badge" id="badge-s6">6</span> GitHub Actions CI/CD</h2>
+
+      <div class="callout info">
+        <strong>🔐 OIDC — no stored secrets</strong>
+        Instead of creating an IAM user and storing its access keys as GitHub secrets, we use OIDC (OpenID Connect). GitHub Actions proves its identity to AWS using a short-lived token tied to the specific repo and branch. AWS trusts it and issues temporary credentials. There are no long-lived secrets to leak or rotate. The CDK stack already set this up for you — you just need to tell GitHub the role ARN.
+        <details class="azure" style="margin-top: 10px;">
+          <summary>Azure equivalent</summary>
+          <div class="azure-body">
+            <p>This is <strong>Workload Identity Federation</strong> in Azure — same concept. Rather than storing a service principal client secret in GitHub, you configure a trust relationship between GitHub Actions and Entra ID / AWS IAM. The platform exchanges a JWT for temporary credentials, scoped to the specific repo and branch.</p>
+          </div>
+        </details>
+      </div>
+
+      <!-- Push to GitHub -->
+      <div class="step" id="step-s6-push">
+        <input type="checkbox" id="cb-s6-push">
+        <div class="step-body">
+          <div class="step-title">Push the code to GitHub</div>
+          <p class="step-desc">Create a new repo on GitHub (private is fine), then:</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>git remote add origin https://github.com/YOUR_USERNAME/hostahtml.git
+git push -u origin main</code></pre></div>
+        </div>
+      </div>
+
+      <!-- Add secrets -->
+      <div class="step" id="step-s6-secrets">
+        <input type="checkbox" id="cb-s6-secrets">
+        <div class="step-body">
+          <div class="step-title">Add two GitHub Actions secrets</div>
+          <p class="step-desc">In your GitHub repo go to <strong>Settings → Secrets and variables → Actions → New repository secret</strong>. Add:</p>
+          <ul>
+            <li><code>AWS_DEPLOY_ROLE_ARN</code> → the <code>DeployRoleArn</code> from your CDK outputs</li>
+            <li><code>AWS_REGION</code> → <code>eu-west-2</code> (or your region)</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Trigger deploy -->
+      <div class="step" id="step-s6-trigger">
+        <input type="checkbox" id="cb-s6-trigger">
+        <div class="step-body">
+          <div class="step-title">Push to main to trigger a deploy</div>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>git commit --allow-empty -m "trigger deploy"
+git push</code></pre></div>
+          <p class="step-desc">Go to the <strong>Actions</strong> tab in your GitHub repo. Watch the <strong>Deploy</strong> workflow — it should go green in about 3 minutes.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- SECTION 7: Verify                                                 -->
+    <!-- ================================================================ -->
+    <section id="s7">
+      <h2><span class="badge" id="badge-s7">7</span> Verify Everything</h2>
+
+      <!-- Test API -->
+      <div class="step" id="step-s7-api">
+        <input type="checkbox" id="cb-s7-api">
+        <div class="step-body">
+          <div class="step-title">Hit the health check</div>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>curl https://YOUR_API_URL/</code></pre></div>
+          <p class="step-desc">Expected: <code>{"status":"ok"}</code>. If this still works after the GitHub Actions deploy, the CI/CD pipeline is deploying correctly.</p>
+        </div>
+      </div>
+
+      <!-- Upload test -->
+      <div class="step" id="step-s7-upload">
+        <input type="checkbox" id="cb-s7-upload">
+        <div class="step-body">
+          <div class="step-title">Upload a file and open the link</div>
+          <p class="step-desc">Use <code>app.html</code> to upload an HTML file. Click the returned link — it should open and render in your browser.</p>
+        </div>
+      </div>
+
+      <!-- CloudWatch -->
+      <div class="step" id="step-s7-logs">
+        <input type="checkbox" id="cb-s7-logs">
+        <div class="step-body">
+          <div class="step-title">Check CloudWatch Logs</div>
+          <p class="step-desc">In the AWS Console, go to <strong>CloudWatch → Log groups</strong> and find <code>/aws/lambda/HostahtmlStack-ApiFunction...</code>. You should see the upload logged there.</p>
+          <details class="azure">
+            <summary>Azure equivalent</summary>
+            <div class="azure-body">
+              <p>CloudWatch Logs = Application Insights / Azure Monitor. Lambda automatically ships its <code>console.log</code> output here. You can build dashboards, set up alerts, and query logs — all within CloudWatch.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- S3 Console -->
+      <div class="step" id="step-s7-s3">
+        <input type="checkbox" id="cb-s7-s3">
+        <div class="step-body">
+          <div class="step-title">Check S3 in the console</div>
+          <p class="step-desc">In the AWS Console, go to <strong>S3</strong> and find your <code>hostahtml-uploads-...</code> bucket. You should see the files you uploaded.</p>
+          <details class="azure">
+            <summary>Azure equivalent</summary>
+            <div class="azure-body">
+              <p>S3 = Azure Blob Storage. S3 "buckets" = Blob Storage "containers". Objects inside are referenced by a "key" (file path within the bucket), not a URL path as in Azure.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <div class="callout info" style="margin-top: 24px;">
+        <strong>🎉 You're live on AWS.</strong>
+        You have a TypeScript Lambda behind API Gateway, a private S3 bucket with pre-signed URL access, and a GitHub Actions CI/CD pipeline — all running in an enterprise AWS account. Next step: add auth, file listing, deletion, and privacy controls to build out the full hostahtml app.
+      </div>
+    </section>
+
+  </main>
+</div><!-- /.layout -->
+
+<script>
+  // ── Checkbox persistence ────────────────────────────────────────────────────
+  const KEY = 'hostahtml-guide';
+
+  function save() {
+    const state = {};
+    document.querySelectorAll('input[type=checkbox]').forEach(cb => {
+      state[cb.id] = cb.checked;
+    });
+    localStorage.setItem(KEY, JSON.stringify(state));
+  }
+
+  function load() {
+    try {
+      const state = JSON.parse(localStorage.getItem(KEY) || '{}');
+      document.querySelectorAll('input[type=checkbox]').forEach(cb => {
+        if (state[cb.id]) {
+          cb.checked = true;
+          cb.closest('.step')?.classList.add('step-done');
+        }
+      });
+    } catch {}
+  }
+
+  function resetProgress() {
+    if (!confirm('Reset all progress?')) return;
+    localStorage.removeItem(KEY);
+    document.querySelectorAll('input[type=checkbox]').forEach(cb => {
+      cb.checked = false;
+      cb.closest('.step')?.classList.remove('step-done');
+    });
+    updateProgress();
+  }
+
+  // ── Progress bar ────────────────────────────────────────────────────────────
+  function updateProgress() {
+    const all = document.querySelectorAll('input[type=checkbox]');
+    const done = [...all].filter(cb => cb.checked);
+    const pct = all.length ? (done.length / all.length) * 100 : 0;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-text').textContent =
+      `${done.length} / ${all.length} complete`;
+
+    document.querySelectorAll('section[id]').forEach(sec => {
+      const boxes = sec.querySelectorAll('input[type=checkbox]');
+      const allDone = boxes.length > 0 && [...boxes].every(b => b.checked);
+      sec.classList.toggle('s-done', allDone);
+      const badge = document.getElementById(`badge-${sec.id}`);
+      if (badge) badge.textContent = allDone ? '✓' : sec.id.replace('s', '');
+      const nav = document.getElementById(`nav-${sec.id}`);
+      if (nav) nav.classList.toggle('done', allDone);
+    });
+  }
+
+  // ── Checkbox events ─────────────────────────────────────────────────────────
+  document.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      cb.closest('.step')?.classList.toggle('step-done', cb.checked);
+      save();
+      updateProgress();
+    });
+  });
+
+  // ── Copy buttons ────────────────────────────────────────────────────────────
+  function cp(btn) {
+    const text = btn.closest('.code-wrap').querySelector('pre').textContent.trim();
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // ── Platform tabs ────────────────────────────────────────────────────────────
+  function tab(btn, paneId) {
+    const tabs = btn.closest('.tabs');
+    tabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    tabs.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(paneId)?.classList.add('active');
+  }
+
+  // ── Scroll spy ──────────────────────────────────────────────────────────────
+  const spy = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      document.querySelectorAll('#sidebar a').forEach(a => a.classList.remove('active'));
+      const a = document.getElementById(`nav-${e.target.id}`);
+      if (a) a.classList.add('active');
+    });
+  }, { rootMargin: '-25% 0px -65% 0px' });
+  document.querySelectorAll('section[id]').forEach(s => spy.observe(s));
+
+  // ── Init ────────────────────────────────────────────────────────────────────
+  load();
+  updateProgress();
+</script>
+</body>
+</html>
