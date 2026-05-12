@@ -1011,10 +1011,11 @@ git push -u origin main</code></pre></div>
       <div class="step" id="step-s7-trigger">
         <input type="checkbox" id="cb-s7-trigger">
         <div class="step-body">
-          <div class="step-title">Push to main to trigger a deploy</div>
-          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>git commit --allow-empty -m "trigger deploy"
-git push</code></pre></div>
-          <p class="step-desc">Go to the <strong>Actions</strong> tab in your GitHub repo. Watch the <strong>Deploy</strong> workflow run. It will: deploy the CDK stack, build the Svelte frontend (injecting the API URL from stack outputs), sync the built files to S3, and invalidate the CloudFront cache. Expect about 5 minutes total.</p>
+          <div class="step-title">Trigger a deploy</div>
+          <p class="step-desc">Any push to <code>main</code> triggers the workflow automatically. To trigger it without a new commit, use the GitHub CLI:</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div><pre><code>gh workflow run deploy.yml</code></pre></div>
+          <p class="step-desc">Or in the GitHub UI: <strong>Actions → Deploy → Run workflow → Run workflow</strong>.</p>
+          <p class="step-desc">Go to the <strong>Actions</strong> tab to watch it run. It will: deploy the CDK stack, build the Svelte frontend (injecting the API URL from stack outputs), sync the built files to S3, and invalidate the CloudFront cache. Expect about 5 minutes total.</p>
         </div>
       </div>
     </section>
