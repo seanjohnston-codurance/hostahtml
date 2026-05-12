@@ -5,3 +5,4 @@ infra/cdk.out/
 .DS_Store
 
 .secrets
+.envrc
