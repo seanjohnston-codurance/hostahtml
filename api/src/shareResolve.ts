@@ -133,58 +133,31 @@ function isHtmlContentType(contentType: string): boolean {
 }
 
 function addDraftWatermark(html: string): string {
+  const tiles = Array.from({ length: 48 }, () => "<span>DRAFT</span>").join("\n  ");
   const watermark = `<div class="hostahtml-draft-watermark" aria-hidden="true">
-  <span>DRAFT</span>
-  <strong>NOT FOR CIRCULATION</strong>
+  ${tiles}
 </div>
 <style>
   .hostahtml-draft-watermark {
     position: fixed;
-    inset: 0;
+    inset: -10rem;
     z-index: 2147483647;
     display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    grid-auto-rows: 10rem;
     place-items: center;
     pointer-events: none;
     user-select: none;
+    overflow: hidden;
     font-family: "Nunito Sans", "Helvetica Neue", Arial, sans-serif;
     text-align: center;
-    color: #ffffff;
-    opacity: 0.92;
-  }
-  .hostahtml-draft-watermark::before {
-    content: "";
-    position: absolute;
-    inset: -20vmax;
-    background:
-      repeating-linear-gradient(
-        -35deg,
-        transparent 0 9rem,
-        rgba(232, 89, 26, 0.18) 9rem 12rem
-      ),
-      rgba(26, 37, 53, 0.18);
-  }
-  .hostahtml-draft-watermark span,
-  .hostahtml-draft-watermark strong {
-    position: absolute;
-    transform: rotate(-24deg);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    text-shadow:
-      0 0 2px #1a2535,
-      0 0 18px rgba(26, 37, 53, 0.65);
+    color: rgba(232, 89, 26, 0.16);
   }
   .hostahtml-draft-watermark span {
-    font-size: clamp(4rem, 18vw, 13rem);
-    font-weight: 900;
-    -webkit-text-stroke: 0.05em #e8591a;
-  }
-  .hostahtml-draft-watermark strong {
-    margin-top: clamp(6rem, 20vw, 15rem);
-    padding: 0.45rem 1rem;
-    border: 0.16em solid #e8591a;
-    border-radius: 999px;
-    background: rgba(26, 37, 53, 0.88);
-    font-size: clamp(1rem, 3vw, 2.2rem);
+    transform: rotate(-24deg);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: clamp(1.75rem, 4vw, 3.5rem);
     font-weight: 900;
   }
 </style>`;

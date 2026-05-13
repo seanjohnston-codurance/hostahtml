@@ -16,6 +16,7 @@ User-facing updates for HostaHTML.
 
 - Single HTML files and zipped page bundles now follow the same sharing flow.
 - Choosing or dropping a file no longer uploads immediately; users now confirm the upload after reviewing the draft setting.
+- Draft watermarks are now lighter, smaller, and tiled so shared page content stays easier to read.
 - Draft status now comes from the saved share metadata, not share-link query parameters.
 - Share links no longer reveal storage details, making them cleaner and safer to share.
 

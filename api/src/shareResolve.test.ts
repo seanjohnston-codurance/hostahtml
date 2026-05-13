@@ -171,7 +171,7 @@ describe("handleShareGet", () => {
     expect(sendMock).not.toHaveBeenCalled();
   });
 
-  it("adds a prominent draft watermark to persisted draft share HTML responses", async () => {
+  it("adds a light tiled draft watermark to persisted draft share HTML responses", async () => {
     getShareRecordMock.mockResolvedValue({
       token: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
       ownerUserId: "user-1",
@@ -192,7 +192,10 @@ describe("handleShareGet", () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.body).toContain("DRAFT");
-    expect(res.body).toContain("NOT FOR CIRCULATION");
+    expect(res.body?.match(/DRAFT/g)).toHaveLength(48);
+    expect(res.body).toContain("grid-template-columns: repeat(auto-fill");
+    expect(res.body).not.toContain("NOT FOR CIRCULATION");
+    expect(res.body).not.toContain("-webkit-text-stroke");
     expect(res.body).toContain("<main>bundle</main>");
   });
 
