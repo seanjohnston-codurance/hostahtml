@@ -16,6 +16,7 @@ export type ShareRecord = {
   bundleId?: string;
   createdAt: number;
   expiresAt: number;
+  draft?: boolean;
   revoked?: boolean;
 };
 

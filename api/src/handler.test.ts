@@ -88,7 +88,7 @@ describe("handler", () => {
     expect(res.statusCode).toBe(200);
   });
 
-  it("passes draft preview intent to the share resolver", async () => {
+  it("does not let query parameters determine share draft state", async () => {
     handleShareGetMock.mockResolvedValueOnce({ statusCode: 200, body: "" });
 
     await handler(
@@ -104,8 +104,7 @@ describe("handler", () => {
 
     expect(handleShareGetMock).toHaveBeenCalledWith(
       "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-      "",
-      { draftPreview: true }
+      ""
     );
   });
 

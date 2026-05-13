@@ -206,6 +206,30 @@ describe("handleUpload", () => {
     expect(getSignedUrlMock).not.toHaveBeenCalled();
   });
 
+  it("persists draft metadata and returns draft status when requested", async () => {
+    const res = await handleUpload(
+      baseEvent({
+        headers: { authorization: "Bearer ok" },
+        queryStringParameters: { filename: "draft.html", draft: "1" },
+        body: "<html><body>x</body></html>",
+      })
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.body ?? "{}")).toMatchObject({
+      url: "https://share.example/t/01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      draft: true,
+    });
+    expect(putShareRecordMock).toHaveBeenCalledWith({
+      token: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      ownerUserId: "user-1",
+      bundleId: "01HZX3NDEKTSV4RRFFQ69G5BND",
+      createdAt: 1778662800,
+      expiresAt: 1779267600,
+      draft: true,
+    });
+  });
+
   it("returns early 413 when Content-Length exceeds limit (plain body)", async () => {
     const res = await handleUpload(
       baseEvent({

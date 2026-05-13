@@ -16,16 +16,9 @@ export const handler = async (
   if (method === "POST" && path === "/upload") return handleUpload(e);
   if (method === "GET" && path.startsWith("/t/")) {
     const { token, relativePath } = parseSharePath(e);
-    const options = isDraftPreview(e)
-      ? { draftPreview: true as const }
-      : undefined;
     return relativePath === undefined
-      ? options
-        ? handleShareGet(token, undefined, options)
-        : handleShareGet(token)
-      : options
-        ? handleShareGet(token, relativePath, options)
-        : handleShareGet(token, relativePath);
+      ? handleShareGet(token)
+      : handleShareGet(token, relativePath);
   }
   return jsonResponse(404, { error: "Not found" });
 };
@@ -45,9 +38,4 @@ function parseSharePath(e: APIGatewayProxyEventV2): {
     return { token, relativePath: e.rawPath.slice(prefix.length + 1) };
   }
   return { token, relativePath: undefined };
-}
-
-function isDraftPreview(e: APIGatewayProxyEventV2): boolean {
-  const value = e.queryStringParameters?.draft;
-  return value === "1" || value?.toLowerCase() === "true";
 }

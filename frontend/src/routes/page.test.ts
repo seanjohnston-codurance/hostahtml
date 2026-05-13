@@ -92,6 +92,11 @@ describe("+page", () => {
     expect(input).not.toBeNull();
     await fireEvent.change(input!, { target: { files: [file] } });
 
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.getByText("hello world.html")).toBeInTheDocument();
+
+    await fireEvent.click(screen.getByRole("button", { name: /upload live share/i }));
+
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     expect(fetchMock).toHaveBeenCalledWith(
       "https://api.example/upload?filename=hello%20world.html",
@@ -153,9 +158,50 @@ describe("+page", () => {
     const input = document.querySelector<HTMLInputElement>("input[type='file']");
     expect(input).not.toBeNull();
     await fireEvent.change(input!, { target: { files: [file] } });
+    await fireEvent.click(screen.getByRole("button", { name: /upload live share/i }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Upload failed (415): Body does not look like HTML"
+    );
+  });
+
+  it("lets a signed-in user mark the staged upload as a draft", async () => {
+    const credential = credentialFor({ email: "sean@codurance.com" });
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        url: "https://share.example/t/01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        key: "user-1/object.html",
+        expiresInDays: 7,
+        draft: true,
+      }),
+    });
+
+    render(Page);
+
+    await loadGoogleScript();
+    googleSignInCallback({ credential });
+    await screen.findByText("Share an HTML file or zip bundle");
+
+    const draftToggle = screen.getByRole("checkbox", { name: /mark as draft/i });
+    expect(draftToggle).toBeInTheDocument();
+    await fireEvent.click(draftToggle);
+
+    const file = new File(["<html><body>Draft</body></html>"], "draft.html", {
+      type: "text/html",
+    });
+    const input = document.querySelector<HTMLInputElement>("input[type='file']");
+    expect(input).not.toBeNull();
+    await fireEvent.change(input!, { target: { files: [file] } });
+    await fireEvent.click(screen.getByRole("button", { name: /upload draft share/i }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.example/upload?filename=draft.html&draft=1",
+      expect.objectContaining({
+        method: "POST",
+        body: file,
+      })
     );
   });
 
@@ -182,6 +228,7 @@ describe("+page", () => {
     const input = document.querySelector<HTMLInputElement>("input[type='file']");
     expect(input).not.toBeNull();
     await fireEvent.change(input!, { target: { files: [file] } });
+    await fireEvent.click(screen.getByRole("button", { name: /upload live share/i }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     expect(fetchMock).toHaveBeenCalledWith(

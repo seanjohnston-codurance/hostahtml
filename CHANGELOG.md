@@ -6,7 +6,7 @@ User-facing updates for HostaHTML.
 
 ### Added
 
-- Added a draft preview mode for shared pages: add `?draft=1` to a share link to show a large not-for-circulation watermark.
+- Added a draft upload option so signed-in users can stage a file, choose whether it is a draft, and create watermarked draft links.
 - Added a clearer active state to the top navigation so it is easier to tell which page you are on.
 - Added shorter, cleaner share links that are easier to copy, paste, and send around.
 - Added support for sharing zipped HTML pages with their supporting files, such as stylesheets, scripts, images, and fonts.
@@ -15,6 +15,8 @@ User-facing updates for HostaHTML.
 ### Changed
 
 - Single HTML files and zipped page bundles now follow the same sharing flow.
+- Choosing or dropping a file no longer uploads immediately; users now confirm the upload after reviewing the draft setting.
+- Draft status now comes from the saved share metadata, not share-link query parameters.
 - Share links no longer reveal storage details, making them cleaner and safer to share.
 
 ### Fixed

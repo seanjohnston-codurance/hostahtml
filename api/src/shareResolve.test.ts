@@ -171,34 +171,14 @@ describe("handleShareGet", () => {
     expect(sendMock).not.toHaveBeenCalled();
   });
 
-  it("preserves draft preview intent when redirecting bundle share URLs", async () => {
+  it("adds a prominent draft watermark to persisted draft share HTML responses", async () => {
     getShareRecordMock.mockResolvedValue({
       token: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
       ownerUserId: "user-1",
       bundleId: "01HZX3NDEKTSV4RRFFQ69G5BND",
       createdAt: 1778660000,
       expiresAt: 1778666400,
-    });
-
-    const res = await handleShareGet("01ARZ3NDEKTSV4RRFFQ69G5FAV", undefined, {
-      draftPreview: true,
-    });
-
-    expect(res.statusCode).toBe(302);
-    expect(res.headers).toMatchObject({
-      Location: "/t/01ARZ3NDEKTSV4RRFFQ69G5FAV/?draft=1",
-      "Cache-Control": "private, no-store",
-    });
-    expect(sendMock).not.toHaveBeenCalled();
-  });
-
-  it("adds a prominent draft watermark to draft preview HTML responses", async () => {
-    getShareRecordMock.mockResolvedValue({
-      token: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-      ownerUserId: "user-1",
-      bundleId: "01HZX3NDEKTSV4RRFFQ69G5BND",
-      createdAt: 1778660000,
-      expiresAt: 1778666400,
+      draft: true,
     });
     sendMock.mockResolvedValue({
       Body: {
@@ -208,9 +188,7 @@ describe("handleShareGet", () => {
       ContentType: "text/html; charset=utf-8",
     });
 
-    const res = await handleShareGet("01ARZ3NDEKTSV4RRFFQ69G5FAV", "", {
-      draftPreview: true,
-    });
+    const res = await handleShareGet("01ARZ3NDEKTSV4RRFFQ69G5FAV", "");
 
     expect(res.statusCode).toBe(200);
     expect(res.body).toContain("DRAFT");
@@ -218,13 +196,14 @@ describe("handleShareGet", () => {
     expect(res.body).toContain("<main>bundle</main>");
   });
 
-  it("does not watermark non-HTML draft preview assets", async () => {
+  it("does not watermark non-HTML persisted draft assets", async () => {
     getShareRecordMock.mockResolvedValue({
       token: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
       ownerUserId: "user-1",
       bundleId: "01HZX3NDEKTSV4RRFFQ69G5BND",
       createdAt: 1778660000,
       expiresAt: 1778666400,
+      draft: true,
     });
     sendMock.mockResolvedValue({
       Body: {
@@ -236,8 +215,7 @@ describe("handleShareGet", () => {
 
     const res = await handleShareGet(
       "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-      "assets/app.css",
-      { draftPreview: true }
+      "assets/app.css"
     );
 
     expect(res.statusCode).toBe(200);

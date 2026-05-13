@@ -8,14 +8,10 @@ import { getShareRecord } from "./shareTokens.js";
 
 const s3 = new S3Client({});
 const SHORT_PRESIGN_SECONDS = 5 * 60;
-type ShareGetOptions = {
-  draftPreview?: boolean;
-};
 
 export async function handleShareGet(
   token: string | undefined,
-  relativePath?: string,
-  options: ShareGetOptions = {}
+  relativePath?: string
 ): Promise<APIGatewayProxyStructuredResultV2> {
   const normalizedToken = normalizeShareToken(token);
   if (!normalizedToken) {
@@ -33,7 +29,7 @@ export async function handleShareGet(
       return {
         statusCode: 302,
         headers: {
-          Location: `/t/${normalizedToken}/${options.draftPreview ? "?draft=1" : ""}`,
+          Location: `/t/${normalizedToken}/`,
           "Cache-Control": "private, no-store",
         },
         body: "",
@@ -64,7 +60,7 @@ export async function handleShareGet(
         },
         isBase64Encoded: !text,
         body:
-          options.draftPreview && isHtmlContentType(contentType)
+          record.draft === true && isHtmlContentType(contentType)
             ? addDraftWatermark(body)
             : body,
       };

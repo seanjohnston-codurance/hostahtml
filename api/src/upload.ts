@@ -97,6 +97,7 @@ export async function handleUpload(
   const shareToken = mintToken();
   const createdAt = Math.floor(Date.now() / 1000);
   const expiresAt = createdAt + SEVEN_DAYS;
+  const draft = isDraftUpload(event);
   try {
     for (const file of manifest.files) {
       await s3.send(
@@ -115,6 +116,7 @@ export async function handleUpload(
       bundleId,
       createdAt,
       expiresAt,
+        ...(draft ? { draft: true } : {}),
     });
   } catch (e) {
     await cleanupPartialBundle(manifest, shareToken);
@@ -130,6 +132,7 @@ export async function handleUpload(
     url,
     key: `${userId}/${bundleId}/`,
     expiresInDays: 7,
+    ...(draft ? { draft: true } : {}),
   };
   return jsonResponse(200, payload);
 }
@@ -146,6 +149,11 @@ function isZipUpload(event: APIGatewayProxyEventV2): boolean {
     contentType.toLowerCase().includes("zip") ||
     filename.toLowerCase().endsWith(".zip")
   );
+}
+
+function isDraftUpload(event: APIGatewayProxyEventV2): boolean {
+  const value = event.queryStringParameters?.draft;
+  return value === "1" || value?.toLowerCase() === "true";
 }
 
 async function cleanupPartialBundle(

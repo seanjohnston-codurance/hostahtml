@@ -18,6 +18,8 @@
   let result = $state<UploadResponse | null>(null);
   let error = $state<string | null>(null);
   let copied = $state(false);
+  let selectedFile = $state<File | null>(null);
+  let draft = $state(false);
 
   function onGoogleSignIn(response: { credential: string }) {
     token = response.credential;
@@ -43,21 +45,22 @@
     return () => script.remove();
   });
 
-  async function upload(file: File) {
-    if (!token) return;
+  async function uploadSelectedFile() {
+    if (!token || !selectedFile) return;
     uploading = true;
     error = null;
     result = null;
     try {
+      const query = `filename=${encodeURIComponent(selectedFile.name)}${draft ? "&draft=1" : ""}`;
       const res = await fetch(
-        `${PUBLIC_API_URL}/upload?filename=${encodeURIComponent(file.name)}`,
+        `${PUBLIC_API_URL}/upload?${query}`,
         {
           method: "POST",
           headers: {
-            "Content-Type": contentTypeForUpload(file),
+            "Content-Type": contentTypeForUpload(selectedFile),
             Authorization: `Bearer ${token}`,
           },
-          body: file,
+          body: selectedFile,
         }
       );
       if (!res.ok) {
@@ -76,6 +79,13 @@
     if (file.type) return file.type;
     if (file.name.toLowerCase().endsWith(".zip")) return "application/zip";
     return "text/html";
+  }
+
+  function selectFile(file: File) {
+    selectedFile = file;
+    error = null;
+    result = null;
+    copied = false;
   }
 
   async function copyUrl() {
@@ -104,7 +114,41 @@
             <h2 class="card-title">Share an HTML file or zip bundle</h2>
           </div>
 
-          <Dropzone {uploading} onFile={upload} />
+          <Dropzone {uploading} onFile={selectFile} />
+
+          <div class="upload-options">
+            {#if selectedFile}
+              <div class="selected-file">
+                <span class="selected-label">Selected file</span>
+                <strong>{selectedFile.name}</strong>
+              </div>
+            {:else}
+              <p class="selection-hint">Choose a file, then decide whether this share is a draft.</p>
+            {/if}
+
+            <label class="draft-toggle">
+              <input type="checkbox" bind:checked={draft} disabled={uploading} />
+              <span>
+                <strong>Mark as draft</strong>
+                <small>Shared pages will show a not-for-circulation watermark.</small>
+              </span>
+            </label>
+
+            <button
+              class="upload-btn"
+              type="button"
+              disabled={!selectedFile || uploading}
+              onclick={uploadSelectedFile}
+            >
+              {#if uploading}
+                Uploading…
+              {:else if draft}
+                Upload draft share
+              {:else}
+                Upload live share
+              {/if}
+            </button>
+          </div>
 
           {#if error}
             <div class="error-bar" role="alert">
@@ -227,6 +271,109 @@
     color: #1a2535;
     letter-spacing: -0.025em;
     line-height: 1.2;
+  }
+
+  .upload-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    margin-top: 1rem;
+  }
+
+  .selected-file,
+  .selection-hint {
+    margin: 0;
+    padding: 0.75rem 0.9rem;
+    border-radius: 8px;
+    background: #f6f7f9;
+    border: 1px solid #e2e8ef;
+    color: #4d6070;
+    font-size: 13px;
+  }
+
+  .selected-file {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .selected-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8ca0b4;
+  }
+
+  .selected-file strong {
+    color: #1a2535;
+    font-size: 14px;
+    word-break: break-word;
+  }
+
+  .draft-toggle {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.9rem;
+    border-radius: 10px;
+    border: 1px solid #e2e8ef;
+    color: #2d3f55;
+    cursor: pointer;
+  }
+
+  .draft-toggle input {
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: 0.1rem;
+    accent-color: #e8591a;
+  }
+
+  .draft-toggle strong,
+  .draft-toggle small {
+    display: block;
+  }
+
+  .draft-toggle strong {
+    font-size: 14px;
+    color: #1a2535;
+  }
+
+  .draft-toggle small {
+    margin-top: 0.15rem;
+    font-size: 12px;
+    line-height: 1.45;
+    color: #6b7f90;
+  }
+
+  .upload-btn {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: none;
+    border-radius: 8px;
+    background: #e8591a;
+    color: #fff;
+    cursor: pointer;
+    font-family: "Nunito Sans", inherit;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    transition:
+      background 0.15s,
+      transform 0.1s;
+  }
+
+  .upload-btn:hover:not(:disabled) {
+    background: #c44a13;
+  }
+
+  .upload-btn:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  .upload-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
   }
 
   .error-bar {

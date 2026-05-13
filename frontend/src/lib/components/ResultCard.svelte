@@ -14,7 +14,7 @@
 
 <div class="result-card">
   <div class="result-top">
-    <span class="result-badge">
+    <span class="result-badge" class:draft={result.draft === true}>
       <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
         <path
           d="M1.5 6.5l3.5 3.5 6.5-6.5"
@@ -24,7 +24,11 @@
           stroke-linejoin="round"
         />
       </svg>
-      Live for {result.expiresInDays} days
+      {#if result.draft}
+        Draft / not for circulation
+      {:else}
+        Live for {result.expiresInDays} days
+      {/if}
     </span>
     <button class="copy-btn" class:copied={copied} onclick={onCopy} type="button">
       {#if copied}
@@ -93,6 +97,11 @@
     padding: 4px 10px;
     border-radius: 100px;
     white-space: nowrap;
+  }
+
+  .result-badge.draft {
+    color: #c44a13;
+    background: rgba(232, 89, 26, 0.12);
   }
 
   .result-url {

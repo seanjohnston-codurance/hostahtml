@@ -14,3 +14,20 @@ it("invokes onCopy when copy button is pressed", async () => {
   await fireEvent.click(screen.getByRole("button", { name: /copy link/i }));
   expect(onCopy).toHaveBeenCalled();
 });
+
+it("labels draft links as not for circulation", () => {
+  render(ResultCard, {
+    props: {
+      result: {
+        url: "https://example.com/o",
+        key: "k1",
+        expiresInDays: 7,
+        draft: true,
+      },
+      copied: false,
+      onCopy: vi.fn(),
+    },
+  });
+
+  expect(screen.getByText(/draft \/ not for circulation/i)).toBeInTheDocument();
+});
