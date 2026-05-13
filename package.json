@@ -1,5 +1,12 @@
 {
   "name": "hostahtml",
   "private": true,
-  "workspaces": ["frontend", "api", "shared", "infra"]
+  "workspaces": ["frontend", "api", "shared", "infra"],
+  "scripts": {
+    "dev": "npm run dev -w frontend",
+    "infra:diff": ": ${GOOGLE_CLIENT_ID:?GOOGLE_CLIENT_ID must be set} && npm run diff -w infra -- --context googleClientId=\"$GOOGLE_CLIENT_ID\"",
+    "infra:deploy": ": ${GOOGLE_CLIENT_ID:?GOOGLE_CLIENT_ID must be set} && npm run deploy -w infra -- --require-approval never --context googleClientId=\"$GOOGLE_CLIENT_ID\"",
+    "infra:destroy": "npm run destroy -w infra",
+    "infra:synth": ": ${GOOGLE_CLIENT_ID:?GOOGLE_CLIENT_ID must be set} && npm run synth -w infra -- --context googleClientId=\"$GOOGLE_CLIENT_ID\""
+  }
 }

@@ -3,8 +3,7 @@ import type {
   APIGatewayProxyEventV2,
   APIGatewayProxyStructuredResultV2,
 } from "aws-lambda";
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import type { ErrorResponse, UploadResponse } from "@hostahtml/shared";
 import { verifyGoogleToken } from "./auth.js";
 import {
@@ -14,9 +13,9 @@ import {
   validateUpload,
 } from "./validate.js";
 import { jsonResponse } from "./jsonResponse.js";
+import { mintToken, putShareRecord } from "./shareTokens.js";
 
 const s3 = new S3Client({});
-const BUCKET = process.env.BUCKET_NAME!;
 const SEVEN_DAYS = 7 * 24 * 60 * 60;
 
 export async function handleUpload(
@@ -77,18 +76,23 @@ export async function handleUpload(
 
   await s3.send(
     new PutObjectCommand({
-      Bucket: BUCKET,
+      Bucket: process.env.BUCKET_NAME!,
       Key: key,
       Body: bodyBuf,
       ContentType: "text/html; charset=utf-8",
     })
   );
 
-  const url = await getSignedUrl(
-    s3,
-    new GetObjectCommand({ Bucket: BUCKET, Key: key }),
-    { expiresIn: SEVEN_DAYS }
-  );
+  const shareToken = mintToken();
+  const createdAt = Math.floor(Date.now() / 1000);
+  const expiresAt = createdAt + SEVEN_DAYS;
+  await putShareRecord({
+    token: shareToken,
+    s3Key: key,
+    createdAt,
+    expiresAt,
+  });
+  const url = `${getShareBaseUrl()}/t/${shareToken}`;
 
   console.log(`Uploaded ${key} (${bodyBuf.length} bytes)`);
 
@@ -98,4 +102,8 @@ export async function handleUpload(
     expiresInDays: 7,
   };
   return jsonResponse(200, payload);
+}
+
+function getShareBaseUrl(): string {
+  return process.env.SHARE_BASE_URL!.replace(/\/+$/, "");
 }

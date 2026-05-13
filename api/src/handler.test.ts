@@ -1,7 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { handleUploadMock } = vi.hoisted(() => ({
+const { handleShareGetMock, handleUploadMock } = vi.hoisted(() => ({
+  handleShareGetMock: vi.fn(),
   handleUploadMock: vi.fn(),
+}));
+
+vi.mock("./shareResolve.js", () => ({
+  handleShareGet: handleShareGetMock,
 }));
 
 vi.mock("./upload.js", () => ({
@@ -12,41 +17,57 @@ import { handler } from "./handler.js";
 
 describe("handler", () => {
   beforeEach(() => {
+    handleShareGetMock.mockReset();
     handleUploadMock.mockReset();
     handleUploadMock.mockResolvedValue({ statusCode: 200, body: "{}" });
   });
 
   function minimalEvent(
     method: string,
-    path: string
+    rawPath: string,
+    pathParameters?: Record<string, string>
   ): import("aws-lambda").APIGatewayProxyEventV2 {
     return {
       version: "2.0",
-      routeKey: `${method} ${path}`,
-      rawPath: path,
+      routeKey: `${method} ${rawPath}`,
+      rawPath,
       rawQueryString: "",
       headers: {},
       requestContext: {
         accountId: "acc",
         apiId: "api",
-        domainName: "x",
+        domainName: "x.execute-api.region.amazonaws.com",
         domainPrefix: "x",
         http: {
           method,
-          path,
+          path: rawPath,
           protocol: "HTTP/1.1",
-          sourceIp: "1.1.1.1",
-          userAgent: "t",
+          sourceIp: "1.2.3.4",
+          userAgent: "vitest",
         },
-        requestId: "r",
-        routeKey: `${method} ${path}`,
+        requestId: "rid",
+        routeKey: `${method} ${rawPath}`,
         stage: "$default",
-        time: "t",
+        time: "01/Jan/2020:00:00:00 +0000",
         timeEpoch: 0,
       },
       isBase64Encoded: false,
+      pathParameters,
     } as import("aws-lambda").APIGatewayProxyEventV2;
   }
+
+  it("dispatches GET /t/{token} to the share resolver", async () => {
+    handleShareGetMock.mockResolvedValueOnce({ statusCode: 302, body: "" });
+
+    const res = await handler(
+      minimalEvent("GET", "/t/01ARZ3NDEKTSV4RRFFQ69G5FAV", {
+        token: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      })
+    );
+
+    expect(handleShareGetMock).toHaveBeenCalledWith("01ARZ3NDEKTSV4RRFFQ69G5FAV");
+    expect(res.statusCode).toBe(302);
+  });
 
   it("returns 200 for GET /", async () => {
     const res = await handler(minimalEvent("GET", "/"));

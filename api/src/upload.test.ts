@@ -1,12 +1,18 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-const { verifyGoogleTokenMock, sendMock, getSignedUrlMock } = vi.hoisted(
-  () => ({
+const {
+  verifyGoogleTokenMock,
+  sendMock,
+  getSignedUrlMock,
+  mintTokenMock,
+  putShareRecordMock,
+} = vi.hoisted(() => ({
     verifyGoogleTokenMock: vi.fn(),
     sendMock: vi.fn(),
     getSignedUrlMock: vi.fn(),
-  })
-);
+    mintTokenMock: vi.fn(),
+    putShareRecordMock: vi.fn(),
+  }));
 
 vi.mock("./auth.js", () => ({
   verifyGoogleToken: verifyGoogleTokenMock,
@@ -34,18 +40,34 @@ vi.mock("@aws-sdk/s3-request-presigner", () => ({
   getSignedUrl: getSignedUrlMock,
 }));
 
+vi.mock("./shareTokens.js", () => ({
+  mintToken: mintTokenMock,
+  putShareRecord: putShareRecordMock,
+}));
+
 import { handleUpload } from "./upload.js";
 
 describe("handleUpload", () => {
   beforeEach(() => {
     process.env.BUCKET_NAME = "test-bucket";
     process.env.GOOGLE_CLIENT_ID = "cid";
+    process.env.SHARE_BASE_URL = "https://share.example/";
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-13T09:00:00.000Z"));
     verifyGoogleTokenMock.mockReset();
     sendMock.mockReset();
     getSignedUrlMock.mockReset();
+    mintTokenMock.mockReset();
+    putShareRecordMock.mockReset();
     verifyGoogleTokenMock.mockResolvedValue("user-1");
     sendMock.mockResolvedValue({});
     getSignedUrlMock.mockResolvedValue("https://signed.example/object");
+    mintTokenMock.mockReturnValue("01ARZ3NDEKTSV4RRFFQ69G5FAV");
+    putShareRecordMock.mockResolvedValue(undefined);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   function baseEvent(
@@ -122,7 +144,7 @@ describe("handleUpload", () => {
     expect(res.statusCode).toBe(415);
   });
 
-  it("returns 200 with UploadResponse shape on success", async () => {
+  it("returns 200 with a short share URL and persists token metadata on success", async () => {
     const res = await handleUpload(
       baseEvent({
         headers: { authorization: "Bearer ok" },
@@ -132,11 +154,18 @@ describe("handleUpload", () => {
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body ?? "{}");
     expect(body).toMatchObject({
-      url: "https://signed.example/object",
+      url: "https://share.example/t/01ARZ3NDEKTSV4RRFFQ69G5FAV",
       expiresInDays: 7,
     });
     expect(typeof body.key).toBe("string");
     expect(body.key).toMatch(/^user-1\/[0-9a-f-]{36}-\d+-/);
+    expect(putShareRecordMock).toHaveBeenCalledWith({
+      token: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      s3Key: body.key,
+      createdAt: 1778662800,
+      expiresAt: 1779267600,
+    });
+    expect(getSignedUrlMock).not.toHaveBeenCalled();
   });
 
   it("returns early 413 when Content-Length exceeds limit (plain body)", async () => {

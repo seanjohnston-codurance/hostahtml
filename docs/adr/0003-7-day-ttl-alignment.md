@@ -36,6 +36,7 @@ Changing the policy means updating all three references in the same change. A sh
 ## See also
 
 - ADR-0005 (app-level share tokens; token TTL stays aligned with this ADR’s 7-day policy)
+- ADR-0006 (ULID as public share token format)
 
 ## Reconsider if
 

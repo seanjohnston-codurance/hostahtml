@@ -1,6 +1,7 @@
 import * as cdk from "aws-cdk-lib";
 import { Aws } from "aws-cdk-lib";
 import * as s3 from "aws-cdk-lib/aws-s3";
+import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as lambdaNode from "aws-cdk-lib/aws-lambda-nodejs";
 import * as apigwv2 from "aws-cdk-lib/aws-apigatewayv2";
@@ -15,8 +16,15 @@ export class HostahtmlStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    const googleClientIdContext = this.node.tryGetContext("googleClientId");
+    if (typeof googleClientIdContext === "string" && googleClientIdContext.trim() === "") {
+      throw new Error("CDK context googleClientId must not be empty");
+    }
     const googleClientId =
-      this.node.tryGetContext("googleClientId") ?? "REPLACE_WITH_GOOGLE_CLIENT_ID";
+      googleClientIdContext ?? "REPLACE_WITH_GOOGLE_CLIENT_ID";
+
+    cdk.Tags.of(this).add("owner", "sean-johnston");
+    cdk.Tags.of(this).add("service", "hostahtml");
 
     // ── Uploads bucket ─────────────────────────────────────────────────────────
     const uploadsBucket = new s3.Bucket(this, "UploadsBucket", {
@@ -67,26 +75,16 @@ export class HostahtmlStack extends cdk.Stack {
       }
     );
 
-    // ── Lambda ─────────────────────────────────────────────────────────────────
-    const apiFunction = new lambdaNode.NodejsFunction(this, "ApiFunction", {
-      entry: path.join(__dirname, "../../api/src/handler.ts"),
-      handler: "handler",
-      runtime: lambda.Runtime.NODEJS_20_X,
-      timeout: cdk.Duration.seconds(30),
-      memorySize: 256,
-      projectRoot: path.join(__dirname, "../.."),
-      depsLockFilePath: path.join(__dirname, "../../package-lock.json"),
-      environment: {
-        BUCKET_NAME: uploadsBucket.bucketName,
-        GOOGLE_CLIENT_ID: googleClientId,
+    // ── Share tokens table ─────────────────────────────────────────────────────
+    const shareTokensTable = new dynamodb.Table(this, "ShareTokensTable", {
+      partitionKey: {
+        name: "token",
+        type: dynamodb.AttributeType.STRING,
       },
-      bundling: {
-        minify: true,
-        sourceMap: false,
-      },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      timeToLiveAttribute: "expiresAt",
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
-
-    uploadsBucket.grantReadWrite(apiFunction);
 
     // ── HTTP API v2 ────────────────────────────────────────────────────────────
     const httpApi = new apigwv2.HttpApi(this, "HttpApi", {
@@ -102,6 +100,30 @@ export class HostahtmlStack extends cdk.Stack {
       },
     });
 
+    // ── Lambda ─────────────────────────────────────────────────────────────────
+    const apiFunction = new lambdaNode.NodejsFunction(this, "ApiFunction", {
+      entry: path.join(__dirname, "../../api/src/handler.ts"),
+      handler: "handler",
+      runtime: lambda.Runtime.NODEJS_20_X,
+      timeout: cdk.Duration.seconds(30),
+      memorySize: 256,
+      projectRoot: path.join(__dirname, "../.."),
+      depsLockFilePath: path.join(__dirname, "../../package-lock.json"),
+      environment: {
+        BUCKET_NAME: uploadsBucket.bucketName,
+        GOOGLE_CLIENT_ID: googleClientId,
+        TOKENS_TABLE_NAME: shareTokensTable.tableName,
+        SHARE_BASE_URL: httpApi.apiEndpoint,
+      },
+      bundling: {
+        minify: true,
+        sourceMap: false,
+      },
+    });
+
+    uploadsBucket.grantReadWrite(apiFunction);
+    shareTokensTable.grantReadWriteData(apiFunction);
+
     const integration = new apigwv2Integrations.HttpLambdaIntegration(
       "ApiIntegration",
       apiFunction
@@ -116,6 +138,12 @@ export class HostahtmlStack extends cdk.Stack {
     httpApi.addRoutes({
       path: "/upload",
       methods: [apigwv2.HttpMethod.POST],
+      integration,
+    });
+
+    httpApi.addRoutes({
+      path: "/t/{token}",
+      methods: [apigwv2.HttpMethod.GET],
       integration,
     });
 
@@ -248,6 +276,23 @@ export class HostahtmlStack extends cdk.Stack {
           cdkAssetsBucketArn,
           `${cdkAssetsBucketArn}/*`,
         ],
+      })
+    );
+    deployRole.addToPolicy(
+      new iam.PolicyStatement({
+        sid: "DynamoShareTokens",
+        actions: [
+          "dynamodb:CreateTable",
+          "dynamodb:DeleteTable",
+          "dynamodb:DescribeTable",
+          "dynamodb:DescribeTimeToLive",
+          "dynamodb:ListTagsOfResource",
+          "dynamodb:TagResource",
+          "dynamodb:UntagResource",
+          "dynamodb:UpdateTable",
+          "dynamodb:UpdateTimeToLive",
+        ],
+        resources: [shareTokensTable.tableArn],
       })
     );
     deployRole.addToPolicy(

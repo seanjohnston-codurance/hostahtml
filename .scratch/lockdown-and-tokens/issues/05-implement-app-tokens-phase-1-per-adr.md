@@ -34,3 +34,4 @@ Vertical slice per **merged** ADR from issue 04: minimal end-to-end path (e.g. P
 ## Comments
 
 - 2026-05-12 — Marked `ready-for-human`: explicit planning session required before coding; eight-issue breakdown kept; dependency on 04 unchanged.
+- 2026-05-13 — **ADR-0005** and **ADR-0006** are **Accepted** in the repo (documentation); implementation for this issue remains until infra/API match ADR phase 1.

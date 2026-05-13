@@ -8,6 +8,16 @@ Internal Codurance tool for sharing HTML files. Workspaces:
 
 Use `npm` workspaces. Run commands from the workspace root unless noted.
 
+## Root scripts
+
+Run from the repo root. `infra:*` scripts (except `destroy`) need `GOOGLE_CLIENT_ID` exported in the shell — they forward it as CDK context so the Lambda env is set correctly.
+
+- `npm run dev` — SvelteKit dev server (Vite + HMR) for `frontend/`.
+- `npm run infra:synth` — `cdk synth` in `infra/`. Compiles the CDK app to a CloudFormation template under `infra/cdk.out/`. Read-only.
+- `npm run infra:diff` — `cdk diff` in `infra/`. Compares synthesized template against the deployed stack. Read-only; always run before `infra:deploy`.
+- `npm run infra:deploy` — `cdk deploy --require-approval never` in `infra/`. Pushes the stack to AWS (S3, Lambda, API Gateway, CloudFront, IAM).
+- `npm run infra:destroy` — `cdk destroy` in `infra/`. S3 buckets have `RemovalPolicy.RETAIN`, so they survive destroy and must be emptied/deleted by hand if you really want them gone.
+
 ## Agent workflow
 
 - **TDD:** Use `/tdd` for feature work and bug fixes unless the user says otherwise. Follow red → green → refactor and vertical slices; match the Testing sections below for each workspace.
@@ -50,13 +60,14 @@ Vitest, red-first. Mock S3 + `google-auth-library` at the module boundary. `Foo.
 ## Infra (`infra/`)
 
 - AWS CDK v2. Resource definitions only.
+- Tag infrastructure resources with `owner=sean-johnston` and `service=hostahtml`. Prefer stack-level CDK tags so new resources inherit them; add construct-level tags only when a resource does not inherit cleanly.
 - Bucket has a 7-day lifecycle rule matching the presigned URL expiry (ADR-0003).
 - API Gateway HTTP API v2 has stage-level route throttle (5 req/s sustained, 10 burst). Per-user limits deferred (ADR-0002).
 - CloudFront maps 403/404 to `/200.html`; this must match the SvelteKit adapter-static fallback.
 - Lambda entry: `../api/src/handler.ts`. Env: `BUCKET_NAME`, `GOOGLE_CLIENT_ID`, optional `STRICT_HTML_SNIFF`. Google identity must be Codurance (`hd` or `@codurance.com` email); see `api/src/orgPolicy.ts`. Frontend GSI passes `hd` (same domain) in `+page.svelte`.
 
 ### Commands
-- `cd infra && npx cdk diff` / `cdk deploy`
+- Use the root `infra:*` scripts (see "Root scripts" above).
 
 ---
 
