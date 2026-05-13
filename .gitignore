@@ -2,6 +2,7 @@ node_modules/
 infra/dist/
 infra/cdk.out/
 frontend/dist/
+.hostahtml-local/
 *.js.map
 .DS_Store
 

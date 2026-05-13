@@ -25,6 +25,8 @@ function codurancePayload(overrides: Record<string, unknown> = {}) {
 describe("verifyGoogleToken", () => {
   beforeEach(() => {
     process.env.GOOGLE_CLIENT_ID = "test-client-id";
+    delete process.env.HOSTAHTML_AUTH;
+    delete process.env.LOCAL_AUTH_USER_ID;
     mockVerifyIdToken.mockReset();
   });
 
@@ -87,5 +89,13 @@ describe("verifyGoogleToken", () => {
     await expect(verifyGoogleToken("tok")).rejects.toThrow(
       "identity not allowed by org policy"
     );
+  });
+
+  it("accepts the deterministic development token in local auth mode", async () => {
+    process.env.HOSTAHTML_AUTH = "local";
+    process.env.LOCAL_AUTH_USER_ID = "local-dev";
+
+    await expect(verifyGoogleToken("dev-token")).resolves.toBe("local-dev");
+    expect(mockVerifyIdToken).not.toHaveBeenCalled();
   });
 });

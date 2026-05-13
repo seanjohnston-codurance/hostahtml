@@ -12,7 +12,8 @@ Use `npm` workspaces. Run commands from the workspace root unless noted.
 
 Run from the repo root. `infra:*` scripts (except `destroy`) need `GOOGLE_CLIENT_ID` exported in the shell — they forward it as CDK context so the Lambda env is set correctly.
 
-- `npm run dev` — SvelteKit dev server (Vite + HMR) for `frontend/`.
+- `npm run dev` — SvelteKit dev server (Vite + HMR) for `frontend/`, forced to the local API at `http://127.0.0.1:9999` with local auth.
+- `npm run dev:api` — local API server on `http://127.0.0.1:9999`, backed by filesystem storage under `.hostahtml-local/`; use `Authorization: Bearer dev-token` for local uploads.
 - `npm run infra:synth` — `cdk synth` in `infra/`. Compiles the CDK app to a CloudFormation template under `infra/cdk.out/`. Read-only.
 - `npm run infra:diff` — `cdk diff` in `infra/`. Compares synthesized template against the deployed stack. Read-only; always run before `infra:deploy`.
 - `npm run infra:deploy` — `cdk deploy --require-approval never` in `infra/`. Pushes the stack to AWS (S3, Lambda, API Gateway, CloudFront, IAM).
@@ -52,6 +53,7 @@ Vitest + `@testing-library/svelte` v5 + jsdom. Red → green → refactor. `Foo.
 - AWS Lambda (Node 20), bundled by CDK's `NodejsFunction`.
 - `handler.ts` dispatches only; `auth.ts`, `validate.ts`, `upload.ts` hold logic.
 - **JWT:** `google-auth-library`'s `OAuth2Client.verifyIdToken` (caches JWKS in module scope). Never call `tokeninfo`.
+- **Local dev:** `npm run dev:api -w api` runs `handler.ts` through a local HTTP server with `HOSTAHTML_STORAGE=filesystem` and `HOSTAHTML_AUTH=local` defaults. Root `npm run dev` sets `PUBLIC_API_URL=http://127.0.0.1:9999` and `PUBLIC_AUTH_MODE=local` for the frontend.
 - **Validation:** decode API Gateway bodies using `isBase64Encoded`; reject decoded bytes > 5 MB; reject if first 1 KB lacks `<html` / `<!doctype` / `<body>`.
 - Imports shared response types from `@hostahtml/shared`.
 
@@ -59,7 +61,7 @@ Vitest + `@testing-library/svelte` v5 + jsdom. Red → green → refactor. `Foo.
 Vitest, red-first. Prefer testing through public entrypoints and pure functions without mocking internal modules. Mock S3, `google-auth-library`, and similar provider SDKs only at the module boundary. `Foo.ts` ↔ `Foo.test.ts`. When changing API response shapes or shared types, cover the serialized producer/consumer contract without adding runtime tests for type-only packages.
 
 ### Commands
-- `npm run test|check -w api`
+- `npm run dev:api|test|check -w api`
 
 ## Shared (`shared/`)
 

@@ -1,7 +1,12 @@
 <script lang="ts">
   import type { UploadResponse } from "@hostahtml/shared";
+  import { dev } from "$app/environment";
   import { onMount } from "svelte";
-  import { PUBLIC_API_URL, PUBLIC_GOOGLE_CLIENT_ID } from "$env/static/public";
+  import {
+    PUBLIC_API_URL,
+    PUBLIC_AUTH_MODE,
+    PUBLIC_GOOGLE_CLIENT_ID,
+  } from "$env/static/public";
   import Dropzone from "$lib/components/Dropzone.svelte";
   import ResultCard from "$lib/components/ResultCard.svelte";
   import SignInPane from "$lib/components/SignInPane.svelte";
@@ -11,6 +16,7 @@
   import { decodeGoogleCredentialPayload } from "$lib/decodeGoogleCredentialPayload.js";
 
   const GOOGLE_BUTTON_ID = "google-signin-btn";
+  const localAuth = dev && PUBLIC_AUTH_MODE === "local";
 
   let token = $state<string | null>(null);
   let userEmail = $state<string | null>(null);
@@ -28,6 +34,12 @@
   }
 
   onMount(() => {
+    if (localAuth) {
+      token = "dev-token";
+      userEmail = "local@hostahtml.dev";
+      return;
+    }
+
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
     script.onload = () => {

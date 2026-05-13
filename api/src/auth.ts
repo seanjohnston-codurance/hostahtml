@@ -11,6 +11,11 @@ function isEmailVerified(payload: {
 }
 
 export async function verifyGoogleToken(token: string): Promise<string> {
+  if (process.env.HOSTAHTML_AUTH === "local") {
+    if (token !== "dev-token") throw new Error("invalid local token");
+    return process.env.LOCAL_AUTH_USER_ID ?? "local-user";
+  }
+
   const audience = process.env.GOOGLE_CLIENT_ID;
   if (!audience) throw new Error("GOOGLE_CLIENT_ID not set");
   const ticket = await client.verifyIdToken({

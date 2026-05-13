@@ -1,9 +1,23 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/svelte";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+const testEnv = vi.hoisted(() => ({
+  dev: false,
+  publicAuthMode: "google",
+}));
+
 vi.mock("$env/static/public", () => ({
   PUBLIC_API_URL: "https://api.example",
+  get PUBLIC_AUTH_MODE() {
+    return testEnv.publicAuthMode;
+  },
   PUBLIC_GOOGLE_CLIENT_ID: "client-id.apps.googleusercontent.com",
+}));
+
+vi.mock("$app/environment", () => ({
+  get dev() {
+    return testEnv.dev;
+  },
 }));
 
 import Page from "./+page.svelte";
@@ -38,6 +52,8 @@ describe("+page", () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
+    testEnv.dev = false;
+    testEnv.publicAuthMode = "google";
 
     googleSignInCallback = () => {};
     vi.stubGlobal("google", {
@@ -134,6 +150,47 @@ describe("+page", () => {
     expect(screen.getByRole("link", { name: /see what's new/i })).toHaveAttribute(
       "href",
       "/changelog"
+    );
+  });
+
+  it("uses the development token without loading Google Sign-In in local auth mode", async () => {
+    testEnv.dev = true;
+    testEnv.publicAuthMode = "local";
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        url: "https://share.example/t/01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        key: "local-user/01HZX3NDEKTSV4RRFFQ69G5BND/",
+        expiresInDays: 7,
+      }),
+    });
+
+    render(Page);
+
+    await screen.findByText("Share an HTML file or zip bundle");
+    expect(screen.getByText("local@hostahtml.dev")).toBeInTheDocument();
+    expect(
+      document.head.querySelector('script[src="https://accounts.google.com/gsi/client"]')
+    ).toBeNull();
+
+    const file = new File(["<html><body>Local</body></html>"], "local.html", {
+      type: "text/html",
+    });
+    const input = document.querySelector<HTMLInputElement>("input[type='file']");
+    expect(input).not.toBeNull();
+    await fireEvent.change(input!, { target: { files: [file] } });
+    await fireEvent.click(screen.getByRole("button", { name: /upload live share/i }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.example/upload?filename=local.html",
+      expect.objectContaining({
+        headers: {
+          "Content-Type": "text/html",
+          Authorization: "Bearer dev-token",
+        },
+        body: file,
+      })
     );
   });
 

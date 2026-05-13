@@ -5,6 +5,7 @@ import type { ErrorResponse } from "@hostahtml/shared";
 import { jsonResponse } from "./jsonResponse.js";
 import { normalizeShareToken } from "./shareTokenFormat.js";
 import { getShareRecord } from "./shareTokens.js";
+import { getObjectStore } from "./objectStore.js";
 
 const s3 = new S3Client({});
 const SHORT_PRESIGN_SECONDS = 5 * 60;
@@ -39,16 +40,11 @@ export async function handleShareGet(
     if (!safePath) return notFound();
 
     try {
-      const object = await s3.send(
-        new GetObjectCommand({
-          Bucket: process.env.BUCKET_NAME!,
-          Key: `${record.ownerUserId}/${record.bundleId}/${safePath}`,
-        })
+      const object = await getObjectStore().getObject(
+        `${record.ownerUserId}/${record.bundleId}/${safePath}`
       );
-      const bodyBytes = Buffer.from(
-        await objectBodyToBytes(object.Body as { transformToByteArray?: () => Promise<Uint8Array> })
-      );
-      const contentType = object.ContentType ?? "application/octet-stream";
+      const bodyBytes = Buffer.from(object.body);
+      const contentType = object.contentType;
       const text = isTextContentType(contentType);
       const body = text ? bodyBytes.toString("utf8") : bodyBytes.toString("base64");
 
@@ -106,13 +102,6 @@ function resolveBundlePath(relativePath: string): string | null {
   }
   if (resolvedSegments.length === 0) return null;
   return resolvedSegments.join("/");
-}
-
-async function objectBodyToBytes(body: {
-  transformToByteArray?: () => Promise<Uint8Array>;
-}): Promise<Uint8Array> {
-  if (body.transformToByteArray) return body.transformToByteArray();
-  return new Uint8Array();
 }
 
 function isTextContentType(contentType: string): boolean {

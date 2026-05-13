@@ -2,7 +2,6 @@ import type {
   APIGatewayProxyEventV2,
   APIGatewayProxyStructuredResultV2,
 } from "aws-lambda";
-import { S3Client, DeleteObjectsCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import type { ErrorResponse, UploadResponse } from "@hostahtml/shared";
 import { verifyGoogleToken } from "./auth.js";
 import {
@@ -21,8 +20,8 @@ import {
   buildSingleHtmlBundleManifest,
   buildZipBundleManifest,
 } from "./bundles.js";
+import { getObjectStore } from "./objectStore.js";
 
-const s3 = new S3Client({});
 const SEVEN_DAYS = 7 * 24 * 60 * 60;
 
 export async function handleUpload(
@@ -100,14 +99,11 @@ export async function handleUpload(
   const draft = isDraftUpload(event);
   try {
     for (const file of manifest.files) {
-      await s3.send(
-        new PutObjectCommand({
-          Bucket: process.env.BUCKET_NAME!,
-          Key: `${manifest.ownerUserId}/${manifest.bundleId}/${file.relativePath}`,
-          Body: file.body,
-          ContentType: file.contentType,
-        })
-      );
+      await getObjectStore().putObject({
+        key: `${manifest.ownerUserId}/${manifest.bundleId}/${file.relativePath}`,
+        body: file.body,
+        contentType: file.contentType,
+      });
     }
 
     await putShareRecord({
@@ -161,16 +157,10 @@ async function cleanupPartialBundle(
   shareToken: string
 ): Promise<void> {
   try {
-    await s3.send(
-      new DeleteObjectsCommand({
-        Bucket: process.env.BUCKET_NAME!,
-        Delete: {
-          Objects: manifest.files.map((file) => ({
-            Key: `${manifest.ownerUserId}/${manifest.bundleId}/${file.relativePath}`,
-          })),
-          Quiet: true,
-        },
-      })
+    await getObjectStore().deleteObjects(
+      manifest.files.map(
+        (file) => `${manifest.ownerUserId}/${manifest.bundleId}/${file.relativePath}`
+      )
     );
   } catch (cleanupError) {
     console.warn("Failed to clean up partial bundle upload", cleanupError);

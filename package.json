@@ -3,7 +3,8 @@
   "private": true,
   "workspaces": ["frontend", "api", "shared", "infra"],
   "scripts": {
-    "dev": "npm run dev -w frontend",
+    "dev": "PUBLIC_API_URL=http://127.0.0.1:9999 PUBLIC_AUTH_MODE=local npm run dev -w frontend",
+    "dev:api": "npm run dev:api -w api",
     "infra:diff": ": ${GOOGLE_CLIENT_ID:?GOOGLE_CLIENT_ID must be set} && npm run diff -w infra -- --context googleClientId=\"$GOOGLE_CLIENT_ID\"",
     "infra:deploy": ": ${GOOGLE_CLIENT_ID:?GOOGLE_CLIENT_ID must be set} && npm run deploy -w infra -- --require-approval never --context googleClientId=\"$GOOGLE_CLIENT_ID\"",
     "infra:destroy": "npm run destroy -w infra",
