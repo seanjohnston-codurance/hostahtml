@@ -18,9 +18,23 @@ describe("decodeGoogleCredentialPayload", () => {
     expect(decodeGoogleCredentialPayload(credential)).toEqual(payload);
   });
 
+  it("decodes base64url payloads with omitted padding", () => {
+    const payloads = [
+      { email: "a@codurance.com" },
+      { email: "ab@codurance.com" },
+      { email: "abc@codurance.com" },
+    ];
+
+    for (const payload of payloads) {
+      const credential = `header.${b64urlFromJson(payload)}.sig`;
+      expect(decodeGoogleCredentialPayload(credential)).toEqual(payload);
+    }
+  });
+
   it("returns null on malformed credential", () => {
     expect(decodeGoogleCredentialPayload("not-a-jwt")).toBeNull();
     expect(decodeGoogleCredentialPayload("a.b!!!.c")).toBeNull();
+    expect(decodeGoogleCredentialPayload("a..c")).toBeNull();
   });
 
   it("returns null when payload JSON is invalid", () => {

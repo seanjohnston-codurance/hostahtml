@@ -3,17 +3,17 @@ import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { ErrorResponse } from "@hostahtml/shared";
 import { jsonResponse } from "./jsonResponse.js";
+import { normalizeShareToken } from "./shareTokenFormat.js";
 import { getShareRecord } from "./shareTokens.js";
 
 const s3 = new S3Client({});
 const SHORT_PRESIGN_SECONDS = 5 * 60;
-const ULID_PATTERN = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 
 export async function handleShareGet(
   token: string | undefined
 ): Promise<APIGatewayProxyStructuredResultV2> {
-  const normalizedToken = token?.toUpperCase();
-  if (!normalizedToken || !ULID_PATTERN.test(normalizedToken)) {
+  const normalizedToken = normalizeShareToken(token);
+  if (!normalizedToken) {
     return notFound();
   }
 

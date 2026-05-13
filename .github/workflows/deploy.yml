@@ -39,6 +39,14 @@ jobs:
           PUBLIC_GOOGLE_CLIENT_ID: dummy.apps.googleusercontent.com
         run: npm run check -w frontend
 
+      - name: Test infra
+        run: npm run test -w infra
+
+      - name: Synth infra
+        env:
+          GOOGLE_CLIENT_ID: dummy.apps.googleusercontent.com
+        run: npm run infra:synth
+
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}

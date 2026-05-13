@@ -1,8 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  CODURANCE_ORG_DOMAIN,
-  isCoduranceGoogleIdentity,
-} from "./orgPolicy.js";
+import { isCoduranceGoogleIdentity } from "./orgPolicy.js";
 
 describe("isCoduranceGoogleIdentity", () => {
   it("matches hd claim", () => {
@@ -20,14 +17,16 @@ describe("isCoduranceGoogleIdentity", () => {
     ).toBe(true);
   });
 
-  it("rejects other domains", () => {
-    expect(isCoduranceGoogleIdentity({ hd: "google.com" })).toBe(false);
-    expect(
-      isCoduranceGoogleIdentity({ email: "a@gmail.com" })
-    ).toBe(false);
-  });
-
-  it("exports expected org constant", () => {
-    expect(CODURANCE_ORG_DOMAIN).toBe("codurance.com");
+  it("rejects other and malformed domains", () => {
+    for (const payload of [
+      { hd: "google.com" },
+      { hd: "sub.codurance.com" },
+      { email: "a@gmail.com" },
+      { email: "a@sub.codurance.com" },
+      { email: "a@codurance.com.evil" },
+      { email: "a@codurance.com@evil.example" },
+    ]) {
+      expect(isCoduranceGoogleIdentity(payload)).toBe(false);
+    }
   });
 });

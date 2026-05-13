@@ -159,6 +159,16 @@ describe("handleUpload", () => {
     });
     expect(typeof body.key).toBe("string");
     expect(body.key).toMatch(/^user-1\/[0-9a-f-]{36}-\d+-/);
+    expect(sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: {
+          Bucket: "test-bucket",
+          Key: body.key,
+          Body: Buffer.from("<html><body>x</body></html>", "utf8"),
+          ContentType: "text/html; charset=utf-8",
+        },
+      })
+    );
     expect(putShareRecordMock).toHaveBeenCalledWith({
       token: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
       s3Key: body.key,

@@ -7,6 +7,7 @@ export function isCoduranceGoogleIdentity(payload: {
 }): boolean {
   const org = CODURANCE_ORG_DOMAIN;
   if (payload.hd?.toLowerCase() === org) return true;
-  const host = payload.email?.split("@")[1]?.toLowerCase();
+  const parts = payload.email?.split("@");
+  const host = parts?.length === 2 ? parts[1]?.toLowerCase() : undefined;
   return host === org;
 }

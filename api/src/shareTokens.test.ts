@@ -26,7 +26,8 @@ vi.mock("@aws-sdk/lib-dynamodb", () => ({
   },
 }));
 
-import { getShareRecord, putShareRecord } from "./shareTokens.js";
+import { normalizeShareToken } from "./shareTokenFormat.js";
+import { getShareRecord, mintToken, putShareRecord } from "./shareTokens.js";
 
 describe("shareTokens", () => {
   beforeEach(() => {
@@ -87,5 +88,12 @@ describe("shareTokens", () => {
         },
       })
     );
+  });
+
+  it("mints tokens accepted by share resolution", () => {
+    const token = mintToken();
+
+    expect(normalizeShareToken(token)).toBe(token);
+    expect(normalizeShareToken(token.toLowerCase())).toBe(token);
   });
 });

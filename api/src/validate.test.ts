@@ -1,5 +1,10 @@
 import { afterEach, describe, it, expect } from "vitest";
-import { decodeBody, getContentLength, validateUpload } from "./validate.js";
+import {
+  decodeBody,
+  getContentLength,
+  MAX_UPLOAD_BYTES,
+  validateUpload,
+} from "./validate.js";
 
 describe("validateUpload", () => {
   afterEach(() => {
@@ -23,6 +28,16 @@ describe("validateUpload", () => {
     expect(() => validateUpload(buf)).toThrow("File too large");
   });
 
+  it("enforces the maximum decoded byte boundary", () => {
+    const accepted = Buffer.alloc(MAX_UPLOAD_BYTES, 32);
+    accepted.write("<html>", 0);
+    expect(() => validateUpload(accepted)).not.toThrow();
+
+    const rejected = Buffer.alloc(MAX_UPLOAD_BYTES + 1, 32);
+    rejected.write("<html>", 0);
+    expect(() => validateUpload(rejected)).toThrow("File too large");
+  });
+
   it("rejects binary blob", () => {
     const buf = Buffer.from([0xff, 0xd8, 0xff, 0xe0]);
     expect(() => validateUpload(buf)).toThrow("Body does not look like HTML");
@@ -35,6 +50,16 @@ describe("validateUpload", () => {
       Buffer.from("<!doctype html><html></html>", "utf8"),
     ]);
     expect(() => validateUpload(buf)).not.toThrow();
+  });
+
+  it("only sniffs for HTML hints in the first 1KB after leading whitespace", () => {
+    const hintInsideWindow = Buffer.from(`${"x".repeat(1019)}<html>`, "utf8");
+    const hintOutsideWindow = Buffer.from(`${"x".repeat(1020)}<html>`, "utf8");
+
+    expect(() => validateUpload(hintInsideWindow)).not.toThrow();
+    expect(() => validateUpload(hintOutsideWindow)).toThrow(
+      "Body does not look like HTML"
+    );
   });
 
   it("strict sniff rejects BOM-prefixed HTML", () => {
