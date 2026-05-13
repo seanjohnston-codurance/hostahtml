@@ -192,8 +192,8 @@ describe("handleShareGet", () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.body).toContain("DRAFT");
-    expect(res.body?.match(/DRAFT/g)).toHaveLength(48);
-    expect(res.body).toContain("grid-template-columns: repeat(auto-fill");
+    expect(res.body).toContain("background-repeat: repeat");
+    expect(res.body).toContain("background-size: 16rem 10rem");
     expect(res.body).not.toContain("NOT FOR CIRCULATION");
     expect(res.body).not.toContain("-webkit-text-stroke");
     expect(res.body).toContain("<main>bundle</main>");

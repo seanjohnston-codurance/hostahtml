@@ -22,6 +22,7 @@ User-facing updates for HostaHTML.
 
 ### Fixed
 
+- Draft watermarks now repeat across the whole shared page viewport instead of running out on larger screens.
 - Invalid, expired, or unavailable links now fail with a simple not-found response.
 - Unsafe zipped pages are rejected during upload instead of producing broken or surprising shared pages later.
 - Zipped pages wrapped in a single folder are now accepted when that folder contains the expected `index.html`.

@@ -9,6 +9,9 @@ import { getObjectStore } from "./objectStore.js";
 
 const s3 = new S3Client({});
 const SHORT_PRESIGN_SECONDS = 5 * 60;
+const DRAFT_WATERMARK_TILE = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="160" viewBox="0 0 256 160">
+  <text x="128" y="88" text-anchor="middle" dominant-baseline="middle" transform="rotate(-24 128 80)" font-family="Nunito Sans, Helvetica Neue, Arial, sans-serif" font-size="42" font-weight="900" letter-spacing="5" fill="#e8591a" fill-opacity="0.16">DRAFT</text>
+</svg>`;
 
 export async function handleShareGet(
   token: string | undefined,
@@ -122,32 +125,20 @@ function isHtmlContentType(contentType: string): boolean {
 }
 
 function addDraftWatermark(html: string): string {
-  const tiles = Array.from({ length: 48 }, () => "<span>DRAFT</span>").join("\n  ");
-  const watermark = `<div class="hostahtml-draft-watermark" aria-hidden="true">
-  ${tiles}
-</div>
+  const tileUrl = `data:image/svg+xml,${encodeURIComponent(DRAFT_WATERMARK_TILE)}`;
+  const watermark = `<div class="hostahtml-draft-watermark" aria-hidden="true"></div>
 <style>
   .hostahtml-draft-watermark {
     position: fixed;
     inset: -10rem;
     z-index: 2147483647;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-    grid-auto-rows: 10rem;
-    place-items: center;
     pointer-events: none;
     user-select: none;
     overflow: hidden;
-    font-family: "Nunito Sans", "Helvetica Neue", Arial, sans-serif;
-    text-align: center;
-    color: rgba(232, 89, 26, 0.16);
-  }
-  .hostahtml-draft-watermark span {
-    transform: rotate(-24deg);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-size: clamp(1.75rem, 4vw, 3.5rem);
-    font-weight: 900;
+    background-image: url("${tileUrl}");
+    background-repeat: repeat;
+    background-size: 16rem 10rem;
+    background-position: center;
   }
 </style>`;
 

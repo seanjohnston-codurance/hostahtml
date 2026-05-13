@@ -45,8 +45,8 @@ declare module '$env/static/private' {
 	export const TERM_PROGRAM: string;
 	export const NODE: string;
 	export const INIT_CWD: string;
-	export const TERM: string;
 	export const SHELL: string;
+	export const TERM: string;
 	export const TMPDIR: string;
 	export const npm_config_global_prefix: string;
 	export const TERM_PROGRAM_VERSION: string;
@@ -58,8 +58,8 @@ declare module '$env/static/private' {
 	export const COMMAND_MODE: string;
 	export const npm_config_globalconfig: string;
 	export const SSH_AUTH_SOCK: string;
-	export const __CF_USER_TEXT_ENCODING: string;
 	export const DENO_INSTALL_ROOT: string;
+	export const __CF_USER_TEXT_ENCODING: string;
 	export const npm_execpath: string;
 	export const AWS_PROFILE: string;
 	export const PATH: string;
@@ -98,8 +98,8 @@ declare module '$env/static/private' {
 	export const SECURITYSESSIONID: string;
 	export const npm_node_execpath: string;
 	export const npm_config_prefix: string;
-	export const COLORTERM: string;
 	export const GOOGLE_CLIENT_ID: string;
+	export const COLORTERM: string;
 	export const _: string;
 	export const NODE_ENV: string;
 }
@@ -197,8 +197,8 @@ declare module '$env/dynamic/private' {
 		TERM_PROGRAM: string;
 		NODE: string;
 		INIT_CWD: string;
-		TERM: string;
 		SHELL: string;
+		TERM: string;
 		TMPDIR: string;
 		npm_config_global_prefix: string;
 		TERM_PROGRAM_VERSION: string;
@@ -210,8 +210,8 @@ declare module '$env/dynamic/private' {
 		COMMAND_MODE: string;
 		npm_config_globalconfig: string;
 		SSH_AUTH_SOCK: string;
-		__CF_USER_TEXT_ENCODING: string;
 		DENO_INSTALL_ROOT: string;
+		__CF_USER_TEXT_ENCODING: string;
 		npm_execpath: string;
 		AWS_PROFILE: string;
 		PATH: string;
@@ -250,8 +250,8 @@ declare module '$env/dynamic/private' {
 		SECURITYSESSIONID: string;
 		npm_node_execpath: string;
 		npm_config_prefix: string;
-		COLORTERM: string;
 		GOOGLE_CLIENT_ID: string;
+		COLORTERM: string;
 		_: string;
 		NODE_ENV: string;
 		[key: `PUBLIC_${string}`]: undefined;
