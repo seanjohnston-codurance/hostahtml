@@ -11,3 +11,23 @@ it("hides user chip when email is null", () => {
   render(SiteHeader, { props: { userEmail: null } });
   expect(screen.queryByText("dev@example.com")).not.toBeInTheDocument();
 });
+
+it("links to the changelog", () => {
+  render(SiteHeader, { props: { userEmail: null } });
+  expect(screen.getByRole("link", { name: "Changelog" })).toHaveAttribute(
+    "href",
+    "/changelog"
+  );
+});
+
+it("marks the current page in the navigation", () => {
+  render(SiteHeader, { props: { userEmail: null, currentPath: "/changelog" } });
+
+  expect(screen.getByRole("link", { name: "Changelog" })).toHaveAttribute(
+    "aria-current",
+    "page"
+  );
+  expect(screen.getByRole("link", { name: "Uploader" })).not.toHaveAttribute(
+    "aria-current"
+  );
+});

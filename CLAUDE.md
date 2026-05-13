@@ -21,6 +21,7 @@ Run from the repo root. `infra:*` scripts (except `destroy`) need `GOOGLE_CLIENT
 ## Agent workflow
 
 - **TDD:** Use `/tdd` for feature work and bug fixes unless the user says otherwise. Follow red → green → refactor and vertical slices; match the Testing sections below for each workspace.
+- **Changelog:** When implementing features, bug fixes, or behaviour changes that users can observe, update `CHANGELOG.md` with a dated, user-friendly note. Skip changelog entries for purely internal refactors, tests, agent guidance, or tooling changes unless they affect user-visible behaviour.
 - **MCP:** Prefer enabled MCP servers when they apply. For Svelte, SvelteKit, or frontend behaviour, use the **Svelte MCP** server: read each tool’s schema before calling, and use it to confirm docs and fixes after substantive Svelte changes when that server’s instructions say to.
 - **Testing philosophy:** Prefer fast, deterministic tests that observe public behaviour and stable contracts. Use the narrowest test that gives confidence: many focused tests for pure logic and validators, a smaller number of public-entrypoint vertical-slice tests when the slice is cheap, and very few tests that need real infrastructure, real browsers, or real provider services.
 - **Mocks:** Prefer real collaborators, pure functions, in-memory fakes, and deterministic builders over mocks. Use mocks mainly for hard boundaries such as AWS SDK clients, Google auth, browser APIs, time, randomness, and network I/O; keep boundary mocks thin and contract-focused.

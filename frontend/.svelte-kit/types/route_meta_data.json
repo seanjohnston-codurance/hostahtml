@@ -2,5 +2,9 @@
 	"/": [
 		"src/routes/+layout.ts",
 		"src/routes/+layout.ts"
+	],
+	"/changelog": [
+		"src/routes/changelog/+page.server.ts",
+		"src/routes/+layout.ts"
 	]
 }

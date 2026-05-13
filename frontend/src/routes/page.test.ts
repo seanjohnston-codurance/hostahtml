@@ -123,6 +123,15 @@ describe("+page", () => {
     expect(screen.getByRole("button", { name: /copy link/i })).toBeInTheDocument();
   });
 
+  it("links to update notes from the homepage", () => {
+    render(Page);
+
+    expect(screen.getByRole("link", { name: /see what's new/i })).toHaveAttribute(
+      "href",
+      "/changelog"
+    );
+  });
+
   it("shows an upload error when the API rejects the file", async () => {
     fetchMock.mockResolvedValue({
       ok: false,

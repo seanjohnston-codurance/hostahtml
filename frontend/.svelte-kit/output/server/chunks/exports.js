@@ -1,4 +1,4 @@
-import { n as noop } from "./attributes.js";
+import { n as noop } from "./renderer.js";
 import { s as safe_not_equal } from "./root.js";
 const SCHEME = /^[a-z][a-z\d+\-.]+:/i;
 const internal = new URL("sveltekit-internal://");

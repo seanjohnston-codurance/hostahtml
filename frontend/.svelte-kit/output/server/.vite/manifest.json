@@ -16,11 +16,10 @@
     "src": "../node_modules/@sveltejs/kit/src/runtime/components/svelte-5/error.svelte",
     "isEntry": true,
     "imports": [
-      "_attributes.js",
+      "_renderer.js",
       "_exports.js",
       "_root.js",
-      "_utils.js",
-      "_renderer.js"
+      "_utils.js"
     ]
   },
   "../node_modules/@sveltejs/kit/src/runtime/server/index.js": {
@@ -48,9 +47,19 @@
       "_internal.js"
     ]
   },
-  "_attributes.js": {
-    "file": "chunks/attributes.js",
-    "name": "attributes"
+  "_SiteHeader.BmMxxojt.css": {
+    "file": "_app/immutable/assets/SiteHeader.BmMxxojt.css",
+    "src": "_SiteHeader.BmMxxojt.css"
+  },
+  "_SiteHeader.js": {
+    "file": "chunks/SiteHeader.js",
+    "name": "SiteHeader",
+    "imports": [
+      "_renderer.js"
+    ],
+    "css": [
+      "_app/immutable/assets/SiteHeader.BmMxxojt.css"
+    ]
   },
   "_environment.js": {
     "file": "chunks/environment.js",
@@ -60,7 +69,7 @@
     "file": "chunks/exports.js",
     "name": "exports",
     "imports": [
-      "_attributes.js",
+      "_renderer.js",
       "_root.js"
     ]
   },
@@ -84,8 +93,7 @@
     "file": "chunks/renderer.js",
     "name": "renderer",
     "imports": [
-      "_render-context.js",
-      "_attributes.js"
+      "_render-context.js"
     ]
   },
   "_root.js": {
@@ -93,8 +101,7 @@
     "name": "root",
     "imports": [
       "_renderer.js",
-      "_false.js",
-      "_attributes.js"
+      "_false.js"
     ]
   },
   "_shared.js": {
@@ -133,10 +140,30 @@
     "src": "src/routes/+page.svelte",
     "isEntry": true,
     "imports": [
-      "_attributes.js"
+      "_renderer.js",
+      "_SiteHeader.js"
     ],
     "css": [
-      "_app/immutable/assets/_page.BDhind2Y.css"
+      "_app/immutable/assets/_page.CXd0JCKF.css"
+    ]
+  },
+  "src/routes/changelog/+page.server.ts": {
+    "file": "entries/pages/changelog/_page.server.ts.js",
+    "name": "entries/pages/changelog/_page.server.ts",
+    "src": "src/routes/changelog/+page.server.ts",
+    "isEntry": true
+  },
+  "src/routes/changelog/+page.svelte": {
+    "file": "entries/pages/changelog/_page.svelte.js",
+    "name": "entries/pages/changelog/_page.svelte",
+    "src": "src/routes/changelog/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_renderer.js",
+      "_SiteHeader.js"
+    ],
+    "css": [
+      "_app/immutable/assets/_page.w1ZaDlyG.css"
     ]
   }
 }

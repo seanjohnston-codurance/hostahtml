@@ -91,7 +91,7 @@
 <div class="page">
   <span class="bg-glyph" aria-hidden="true">&lt;/&gt;</span>
 
-  <SiteHeader {userEmail} />
+  <SiteHeader {userEmail} currentPath="/" />
 
   <main class="main">
     {#if !token}
@@ -134,6 +134,8 @@
         </div>
       </div>
     {/if}
+
+    <a class="updates-link" href="/changelog">See what's new</a>
   </main>
 
   <SiteFooter />
@@ -169,8 +171,10 @@
 
   .main {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 1.25rem;
     padding: 3.5rem 1.5rem;
     position: relative;
     z-index: 10;
@@ -238,5 +242,19 @@
     font-weight: 600;
     color: #c44a13;
     line-height: 1.5;
+  }
+
+  .updates-link {
+    color: rgba(255, 255, 255, 0.46);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.18s ease;
+  }
+
+  .updates-link:hover {
+    color: #fff;
   }
 </style>
