@@ -8,10 +8,14 @@ import { getShareRecord } from "./shareTokens.js";
 
 const s3 = new S3Client({});
 const SHORT_PRESIGN_SECONDS = 5 * 60;
+type ShareGetOptions = {
+  draftPreview?: boolean;
+};
 
 export async function handleShareGet(
   token: string | undefined,
-  relativePath?: string
+  relativePath?: string,
+  options: ShareGetOptions = {}
 ): Promise<APIGatewayProxyStructuredResultV2> {
   const normalizedToken = normalizeShareToken(token);
   if (!normalizedToken) {
@@ -29,7 +33,7 @@ export async function handleShareGet(
       return {
         statusCode: 302,
         headers: {
-          Location: `/t/${normalizedToken}/`,
+          Location: `/t/${normalizedToken}/${options.draftPreview ? "?draft=1" : ""}`,
           "Cache-Control": "private, no-store",
         },
         body: "",
@@ -50,6 +54,7 @@ export async function handleShareGet(
       );
       const contentType = object.ContentType ?? "application/octet-stream";
       const text = isTextContentType(contentType);
+      const body = text ? bodyBytes.toString("utf8") : bodyBytes.toString("base64");
 
       return {
         statusCode: 200,
@@ -58,7 +63,10 @@ export async function handleShareGet(
           "Cache-Control": "private, no-store",
         },
         isBase64Encoded: !text,
-        body: text ? bodyBytes.toString("utf8") : bodyBytes.toString("base64"),
+        body:
+          options.draftPreview && isHtmlContentType(contentType)
+            ? addDraftWatermark(body)
+            : body,
       };
     } catch {
       return notFound();
@@ -118,4 +126,75 @@ function isTextContentType(contentType: string): boolean {
     contentType.includes("javascript") ||
     contentType.includes("svg")
   );
+}
+
+function isHtmlContentType(contentType: string): boolean {
+  const normalized = contentType.toLowerCase();
+  return (
+    normalized.startsWith("text/html") ||
+    normalized.startsWith("application/xhtml+xml")
+  );
+}
+
+function addDraftWatermark(html: string): string {
+  const watermark = `<div class="hostahtml-draft-watermark" aria-hidden="true">
+  <span>DRAFT</span>
+  <strong>NOT FOR CIRCULATION</strong>
+</div>
+<style>
+  .hostahtml-draft-watermark {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483647;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    user-select: none;
+    font-family: "Nunito Sans", "Helvetica Neue", Arial, sans-serif;
+    text-align: center;
+    color: #ffffff;
+    opacity: 0.92;
+  }
+  .hostahtml-draft-watermark::before {
+    content: "";
+    position: absolute;
+    inset: -20vmax;
+    background:
+      repeating-linear-gradient(
+        -35deg,
+        transparent 0 9rem,
+        rgba(232, 89, 26, 0.18) 9rem 12rem
+      ),
+      rgba(26, 37, 53, 0.18);
+  }
+  .hostahtml-draft-watermark span,
+  .hostahtml-draft-watermark strong {
+    position: absolute;
+    transform: rotate(-24deg);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-shadow:
+      0 0 2px #1a2535,
+      0 0 18px rgba(26, 37, 53, 0.65);
+  }
+  .hostahtml-draft-watermark span {
+    font-size: clamp(4rem, 18vw, 13rem);
+    font-weight: 900;
+    -webkit-text-stroke: 0.05em #e8591a;
+  }
+  .hostahtml-draft-watermark strong {
+    margin-top: clamp(6rem, 20vw, 15rem);
+    padding: 0.45rem 1rem;
+    border: 0.16em solid #e8591a;
+    border-radius: 999px;
+    background: rgba(26, 37, 53, 0.88);
+    font-size: clamp(1rem, 3vw, 2.2rem);
+    font-weight: 900;
+  }
+</style>`;
+
+  if (/<\/body>/i.test(html)) {
+    return html.replace(/<\/body>/i, `${watermark}</body>`);
+  }
+  return `${html}${watermark}`;
 }

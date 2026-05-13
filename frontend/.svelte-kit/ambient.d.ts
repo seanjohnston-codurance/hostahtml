@@ -64,8 +64,8 @@ declare module '$env/static/private' {
 	export const __MISE_SHIM: string;
 	export const PATH: string;
 	export const npm_package_json: string;
-	export const LaunchInstanceID: string;
 	export const GHOSTTY_SHELL_FEATURES: string;
+	export const LaunchInstanceID: string;
 	export const npm_config_userconfig: string;
 	export const npm_config_init_module: string;
 	export const __CFBundleIdentifier: string;
@@ -80,8 +80,8 @@ declare module '$env/static/private' {
 	export const npm_config_node_gyp: string;
 	export const npm_package_version: string;
 	export const XPC_SERVICE_NAME: string;
-	export const SHLVL: string;
 	export const HOME: string;
+	export const SHLVL: string;
 	export const __MISE_ORIG_PATH: string;
 	export const TERMINFO: string;
 	export const MISE_SHELL: string;
@@ -213,8 +213,8 @@ declare module '$env/dynamic/private' {
 		__MISE_SHIM: string;
 		PATH: string;
 		npm_package_json: string;
-		LaunchInstanceID: string;
 		GHOSTTY_SHELL_FEATURES: string;
+		LaunchInstanceID: string;
 		npm_config_userconfig: string;
 		npm_config_init_module: string;
 		__CFBundleIdentifier: string;
@@ -229,8 +229,8 @@ declare module '$env/dynamic/private' {
 		npm_config_node_gyp: string;
 		npm_package_version: string;
 		XPC_SERVICE_NAME: string;
-		SHLVL: string;
 		HOME: string;
+		SHLVL: string;
 		__MISE_ORIG_PATH: string;
 		TERMINFO: string;
 		MISE_SHELL: string;

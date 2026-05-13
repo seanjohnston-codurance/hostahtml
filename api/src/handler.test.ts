@@ -25,7 +25,8 @@ describe("handler", () => {
   function minimalEvent(
     method: string,
     rawPath: string,
-    pathParameters?: Record<string, string>
+    pathParameters?: Record<string, string>,
+    queryStringParameters?: Record<string, string>
   ): import("aws-lambda").APIGatewayProxyEventV2 {
     return {
       version: "2.0",
@@ -33,6 +34,7 @@ describe("handler", () => {
       rawPath,
       rawQueryString: "",
       headers: {},
+      queryStringParameters,
       requestContext: {
         accountId: "acc",
         apiId: "api",
@@ -84,6 +86,27 @@ describe("handler", () => {
       "assets/app.css"
     );
     expect(res.statusCode).toBe(200);
+  });
+
+  it("passes draft preview intent to the share resolver", async () => {
+    handleShareGetMock.mockResolvedValueOnce({ statusCode: 200, body: "" });
+
+    await handler(
+      minimalEvent(
+        "GET",
+        "/t/01ARZ3NDEKTSV4RRFFQ69G5FAV/",
+        {
+          token: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        },
+        { draft: "1" }
+      )
+    );
+
+    expect(handleShareGetMock).toHaveBeenCalledWith(
+      "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "",
+      { draftPreview: true }
+    );
   });
 
   it("accepts API Gateway greedy path parameters named proxy+", async () => {

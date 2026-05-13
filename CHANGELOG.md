@@ -6,6 +6,7 @@ User-facing updates for HostaHTML.
 
 ### Added
 
+- Added a draft preview mode for shared pages: add `?draft=1` to a share link to show a large not-for-circulation watermark.
 - Added a clearer active state to the top navigation so it is easier to tell which page you are on.
 - Added shorter, cleaner share links that are easier to copy, paste, and send around.
 - Added support for sharing zipped HTML pages with their supporting files, such as stylesheets, scripts, images, and fonts.
