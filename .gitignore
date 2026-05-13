@@ -7,3 +7,6 @@ frontend/dist/
 
 .secrets
 .envrc
+
+.playwright-cli/
+.playwright-mcp/
