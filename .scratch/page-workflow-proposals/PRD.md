@@ -11,6 +11,9 @@ Current ideas:
 3. Give users an overview of their uploads, ideally named from the page title when available.
 4. Let stable links forward to the latest version of a page.
 5. Add a direct "Go to page" action after upload so users do not need to copy their own link.
+6. Let users upload page bundles from folders when browser support allows it.
+7. Make file selection more explicit with a visible picker button, while keeping drag and drop.
+8. Explore moving bundle page serving from Lambda to CloudFront-backed static hosting.
 
 These ideas touch existing ADRs around static hosting, app-level share tokens, and the current 7-day TTL policy. Proposal issues should settle product/security choices before implementation issues are promoted to `ready-for-agent`.
 
@@ -23,3 +26,6 @@ These ideas touch existing ADRs around static hosting, app-level share tokens, a
 - [05 — Proposal: stable page link forwards to latest version](./issues/05-stable-link-latest-version-proposal.md)
 - [06 — Open uploaded page after successful upload](./issues/06-go-to-page-after-upload.md)
 - [07 — Replace an existing page from the uploads overview](./issues/07-replace-page-from-overview.md)
+- [08 — Upload a page bundle from a folder](./issues/08-upload-folder-page-bundle.md)
+- [09 — Add an explicit file picker button](./issues/09-add-explicit-file-picker-button.md)
+- [10 — Proposal: CloudFront-hosted bundle pages](./issues/10-proposal-cloudfront-bundle-hosting.md)

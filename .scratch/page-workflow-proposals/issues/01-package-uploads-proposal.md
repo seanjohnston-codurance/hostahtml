@@ -32,3 +32,4 @@ None — proposal only.
 ## Comments
 
 - 2026-05-13 — Opened from loose product proposal sketch.
+- 2026-05-13 — Proposal outcome documented in ADR-0007: V1 accepts `.zip` bundles with root `index.html`; browser folder upload is split to issue 08.

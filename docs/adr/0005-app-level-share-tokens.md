@@ -27,10 +27,12 @@ Share **token format** (length, alphabet, time-ordering) is specified in **ADR-0
 | Attribute   | Type        | Notes |
 | ----------- | ----------- | ----- |
 | `token`     | String (PK) | Opaque public id; format and validation in **ADR-0006**. Not the S3 key. |
-| `s3Key`     | String      | Upload object key as today (`{userId}/{uuid}-…`). |
+| `s3Key`     | String      | Legacy/single-object upload key (`{userId}/{uuid}-…`). Bundle uploads use `ownerUserId` + `bundleId` per ADR-0007 instead. |
 | `createdAt` | Number      | Unix epoch seconds. |
 | `expiresAt` | Number      | Unix epoch seconds; must align with **ADR-0003** (7 days from creation) unless product policy changes. |
 | `revoked`   | Boolean     | Optional; default false. Not required for phase 1. |
+
+ADR-0007 extends this record shape for bundle uploads: new bundle records store `ownerUserId` and `bundleId`, and derive the uploaded object prefix as `{ownerUserId}/{bundleId}/`.
 
 Indexes: primary key `token`. **DynamoDB TTL** on `expiresAt` for row cleanup (eventual consistency is acceptable alongside S3 lifecycle).
 
@@ -75,6 +77,7 @@ Today the distribution serves only the static site. **Phase 2+:** add a behaviou
 - **ADR-0001** — static frontend + dedicated Lambda; share reads stay API-backed.
 - **ADR-0003** — 7-day TTL alignment; token `expiresAt` must stay in sync with that policy.
 - **ADR-0006** — share token identifier: ULID.
+- **ADR-0007** — bundle upload storage and V1 serving.
 
 ## Reconsider if
 
