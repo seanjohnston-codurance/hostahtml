@@ -20,6 +20,7 @@ User-facing updates for HostaHTML.
 
 - Invalid, expired, or unavailable links now fail with a simple not-found response.
 - Unsafe zipped pages are rejected during upload instead of producing broken or surprising shared pages later.
+- Zipped pages wrapped in a single folder are now accepted when that folder contains the expected `index.html`.
 
 ## 2026-05-12
 

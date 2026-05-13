@@ -315,6 +315,42 @@ describe("handleUpload", () => {
     });
   });
 
+  it("uploads a zip bundle wrapped in a single top-level folder", async () => {
+    const res = await handleUpload(
+      baseEvent({
+        headers: {
+          authorization: "Bearer ok",
+          "content-type": "application/zip",
+        },
+        body: zipBody({
+          "site/index.html":
+            '<html><head><link rel="stylesheet" href="assets/app.css"></head><body>x</body></html>',
+          "site/assets/app.css": "body { color: rebeccapurple; }",
+        }),
+        isBase64Encoded: true,
+      })
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(sendMock).toHaveBeenCalledTimes(2);
+    expect(sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.objectContaining({
+          Key: "user-1/01HZX3NDEKTSV4RRFFQ69G5BND/index.html",
+          ContentType: "text/html; charset=utf-8",
+        }),
+      })
+    );
+    expect(sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.objectContaining({
+          Key: "user-1/01HZX3NDEKTSV4RRFFQ69G5BND/assets/app.css",
+          ContentType: "text/css; charset=utf-8",
+        }),
+      })
+    );
+  });
+
   it("rejects a zip bundle without a root index.html", async () => {
     const res = await handleUpload(
       baseEvent({

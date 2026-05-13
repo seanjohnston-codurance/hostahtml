@@ -69,11 +69,18 @@ export function buildZipBundleManifest(
   const files: BundleFile[] = [];
   const seen = new Set<string>();
   let totalBytes = 0;
+  const normalizedPaths = Object.keys(entries)
+    .filter((rawPath) => !isDirectoryPath(rawPath) && !shouldIgnorePath(rawPath))
+    .map((rawPath) => [rawPath, normalizeBundlePath(rawPath)] as const);
+  const rootPrefix = singleTopLevelDirectoryPrefix(
+    normalizedPaths.map(([, normalizedPath]) => normalizedPath)
+  );
 
-  for (const [rawPath, entryBody] of Object.entries(entries)) {
+  for (const [rawPath, normalizedPath] of normalizedPaths) {
+    const entryBody = entries[rawPath];
     if (isDirectoryPath(rawPath) || shouldIgnorePath(rawPath)) continue;
 
-    const relativePath = normalizeBundlePath(rawPath);
+    const relativePath = stripRootPrefix(normalizedPath, rootPrefix);
     if (seen.has(relativePath)) {
       throw new Error(`Duplicate bundle path: ${relativePath}`);
     }
@@ -104,7 +111,7 @@ export function buildZipBundleManifest(
     throw new Error(`Bundle has too many files (${files.length} > ${MAX_BUNDLE_FILES})`);
   }
   if (!files.some((file) => file.relativePath === "index.html")) {
-    throw new Error("Bundle must contain index.html at the zip root");
+    throw new Error("Bundle must contain index.html at the bundle root");
   }
 
   return { ownerUserId, bundleId, files };
@@ -162,6 +169,22 @@ function shouldIgnorePath(rawPath: string): boolean {
 
 function isDirectoryPath(rawPath: string): boolean {
   return rawPath.endsWith("/") || rawPath.endsWith("\\");
+}
+
+function singleTopLevelDirectoryPrefix(paths: string[]): string {
+  if (paths.some((path) => !path.includes("/"))) return "";
+
+  const topLevelDirectories = new Set(
+    paths.map((path) => path.slice(0, path.indexOf("/")))
+  );
+  if (topLevelDirectories.size !== 1) return "";
+
+  const [directory] = topLevelDirectories;
+  return `${directory}/`;
+}
+
+function stripRootPrefix(path: string, prefix: string): string {
+  return prefix === "" || !path.startsWith(prefix) ? path : path.slice(prefix.length);
 }
 
 function isTextLikePath(path: string): boolean {
