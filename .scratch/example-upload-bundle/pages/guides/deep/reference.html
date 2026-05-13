@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bundle Upload Test - Deep Reference</title>
+    <link rel="stylesheet" href="../../../assets/css/site.css">
+    <script defer src="../../../assets/js/bundle-check.js" data-page="pages/guides/deep/reference.html"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <img src="../../../assets/images/logo.svg" alt="Bundle test logo" width="96" height="96">
+      <div>
+        <p class="eyebrow">Bundle upload fixture</p>
+        <h1>Deep reference page</h1>
+        <p class="path">Current file: <code>pages/guides/deep/reference.html</code></p>
+      </div>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>Navigation links</h2>
+        <ul>
+          <li><a href="../../../index.html">Back to root page</a></li>
+          <li><a href="../../about.html">About page two levels up</a></li>
+          <li><a href="../getting-started.html">Guide page one level up</a></li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Linked assets</h2>
+        <p>This page uses <code>../../../assets/...</code> paths to validate deeply nested asset references.</p>
+        <img class="wide-image" src="../../../assets/images/diagram.svg" alt="Simple upload path diagram">
+        <p id="js-status" class="status">JavaScript has not run yet.</p>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,86 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f6f3ee;
+  color: #23201c;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding: 32px;
+}
+
+a {
+  color: #7952b3;
+  font-weight: 700;
+}
+
+.site-header {
+  align-items: center;
+  background: #ffffff;
+  border: 2px solid #23201c;
+  border-radius: 20px;
+  box-shadow: 8px 8px 0 #23201c;
+  display: flex;
+  gap: 24px;
+  margin: 0 auto 32px;
+  max-width: 880px;
+  padding: 24px;
+}
+
+.eyebrow {
+  color: #7952b3;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+h1,
+h2 {
+  margin-top: 0;
+}
+
+h1 {
+  font-size: clamp(2rem, 6vw, 4rem);
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.path {
+  margin: 0;
+}
+
+main {
+  display: grid;
+  gap: 24px;
+  margin: 0 auto;
+  max-width: 880px;
+}
+
+.card {
+  background: #ffffff;
+  border: 2px solid #23201c;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.wide-image {
+  background: #f6f3ee;
+  border: 2px solid #23201c;
+  border-radius: 12px;
+  display: block;
+  margin: 20px 0;
+  max-width: 100%;
+}
+
+.status {
+  background: #e6ffcc;
+  border: 2px solid #5b7f2a;
+  border-radius: 999px;
+  display: inline-block;
+  font-weight: 800;
+  padding: 8px 14px;
+}

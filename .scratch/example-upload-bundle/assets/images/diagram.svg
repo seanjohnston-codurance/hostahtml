@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="220" viewBox="0 0 720 220" role="img" aria-labelledby="title desc">
+  <title id="title">Bundle file tree diagram</title>
+  <desc id="desc">A simple diagram showing nested pages linking back to shared assets.</desc>
+  <rect width="720" height="220" rx="18" fill="#ffffff"/>
+  <g fill="#f6f3ee" stroke="#23201c" stroke-width="3">
+    <rect x="40" y="42" width="150" height="62" rx="12"/>
+    <rect x="285" y="42" width="150" height="62" rx="12"/>
+    <rect x="530" y="42" width="150" height="62" rx="12"/>
+    <rect x="285" y="138" width="150" height="42" rx="12"/>
+  </g>
+  <g fill="#23201c" font-family="ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="700">
+    <text x="74" y="79">index.html</text>
+    <text x="319" y="79">pages/</text>
+    <text x="562" y="79">deep page</text>
+    <text x="326" y="165">assets/</text>
+  </g>
+  <g fill="none" stroke="#7952b3" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M194 73h86"/>
+    <path d="M439 73h86"/>
+    <path d="M360 110v24"/>
+    <path d="M115 108c45 64 140 78 165 50"/>
+    <path d="M605 108c-45 64-140 78-165 50"/>
+  </g>
+  <g fill="#7952b3">
+    <path d="M275 62l14 11-14 11z"/>
+    <path d="M520 62l14 11-14 11z"/>
+    <path d="M349 130l11 14 11-14z"/>
+  </g>
+</svg>

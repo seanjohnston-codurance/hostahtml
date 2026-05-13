@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bundle Upload Test - About</title>
+    <link rel="stylesheet" href="../assets/css/site.css">
+    <script defer src="../assets/js/bundle-check.js" data-page="pages/about.html"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <img src="../assets/images/logo.svg" alt="Bundle test logo" width="96" height="96">
+      <div>
+        <p class="eyebrow">Bundle upload fixture</p>
+        <h1>About page</h1>
+        <p class="path">Current file: <code>pages/about.html</code></p>
+      </div>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>Navigation links</h2>
+        <ul>
+          <li><a href="../index.html">Back to root page</a></li>
+          <li><a href="guides/getting-started.html">Guide page one level deeper</a></li>
+          <li><a href="guides/deep/reference.html">Reference page two levels deeper</a></li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Linked assets</h2>
+        <p>This page uses <code>../assets/...</code> paths for CSS, JavaScript, and images.</p>
+        <img class="wide-image" src="../assets/images/diagram.svg" alt="Simple upload path diagram">
+        <p id="js-status" class="status">JavaScript has not run yet.</p>
+      </section>
+    </main>
+  </body>
+</html>

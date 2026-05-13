@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bundle Upload Test - Root</title>
+    <link rel="stylesheet" href="assets/css/site.css">
+    <script defer src="assets/js/bundle-check.js" data-page="index.html"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <img src="assets/images/logo.svg" alt="Bundle test logo" width="96" height="96">
+      <div>
+        <p class="eyebrow">Bundle upload fixture</p>
+        <h1>Root page</h1>
+        <p class="path">Current file: <code>index.html</code></p>
+      </div>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>Navigation links</h2>
+        <ul>
+          <li><a href="pages/about.html">About page one level down</a></li>
+          <li><a href="pages/guides/getting-started.html">Guide page two levels down</a></li>
+          <li><a href="pages/guides/deep/reference.html">Reference page three levels down</a></li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Linked assets</h2>
+        <p>This page loads shared CSS, shared JavaScript, and an SVG image using root-relative fixture paths.</p>
+        <img class="wide-image" src="assets/images/diagram.svg" alt="Simple upload path diagram">
+        <p id="js-status" class="status">JavaScript has not run yet.</p>
+      </section>
+    </main>
+  </body>
+</html>

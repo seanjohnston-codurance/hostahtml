@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" role="img" aria-labelledby="title desc">
+  <title id="title">Bundle test logo</title>
+  <desc id="desc">A stylised box containing linked files.</desc>
+  <rect width="96" height="96" rx="22" fill="#7952b3"/>
+  <path d="M24 30h30l18 18v18H24z" fill="#fff"/>
+  <path d="M54 30v18h18" fill="#d8c7ff"/>
+  <path d="M31 54h34M31 64h24" stroke="#23201c" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="24" cy="76" r="6" fill="#e6ffcc"/>
+  <circle cx="48" cy="76" r="6" fill="#e6ffcc"/>
+  <circle cx="72" cy="76" r="6" fill="#e6ffcc"/>
+</svg>
