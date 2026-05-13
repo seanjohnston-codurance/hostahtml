@@ -146,6 +146,11 @@ export class HostahtmlStack extends cdk.Stack {
       methods: [apigwv2.HttpMethod.GET],
       integration,
     });
+    httpApi.addRoutes({
+      path: "/t/{token}/{proxy+}",
+      methods: [apigwv2.HttpMethod.GET],
+      integration,
+    });
 
     const stage = httpApi.defaultStage?.node.defaultChild as apigwv2.CfnStage;
     stage.defaultRouteSettings = {

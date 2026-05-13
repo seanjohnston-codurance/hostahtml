@@ -103,6 +103,12 @@ describe("HostahtmlStack", () => {
     });
   });
 
+  it("routes nested share-token paths to the API Lambda", () => {
+    template.hasResourceProperties("AWS::ApiGatewayV2::Route", {
+      RouteKey: "GET /t/{token}/{proxy+}",
+    });
+  });
+
   it("tags resources with owner and service", () => {
     const buckets = template.findResources("AWS::S3::Bucket");
     expect(Object.values(buckets)).not.toHaveLength(0);

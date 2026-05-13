@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { UploadResponse } from "@hostahtml/shared";
-  import { browser } from "$app/environment";
+  import { onMount } from "svelte";
   import { PUBLIC_API_URL, PUBLIC_GOOGLE_CLIENT_ID } from "$env/static/public";
   import Dropzone from "$lib/components/Dropzone.svelte";
   import ResultCard from "$lib/components/ResultCard.svelte";
@@ -25,8 +25,7 @@
     userEmail = payload?.email ?? null;
   }
 
-  $effect(() => {
-    if (!browser) return;
+  onMount(() => {
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
     script.onload = () => {
@@ -55,7 +54,7 @@
         {
           method: "POST",
           headers: {
-            "Content-Type": "text/html",
+            "Content-Type": contentTypeForUpload(file),
             Authorization: `Bearer ${token}`,
           },
           body: file,
@@ -71,6 +70,12 @@
     } finally {
       uploading = false;
     }
+  }
+
+  function contentTypeForUpload(file: File): string {
+    if (file.type) return file.type;
+    if (file.name.toLowerCase().endsWith(".zip")) return "application/zip";
+    return "text/html";
   }
 
   async function copyUrl() {
@@ -96,7 +101,7 @@
         <div class="card">
           <div class="card-header">
             <span class="eyebrow-sm">Upload</span>
-            <h2 class="card-title">Share an HTML file</h2>
+            <h2 class="card-title">Share an HTML file or zip bundle</h2>
           </div>
 
           <Dropzone {uploading} onFile={upload} />

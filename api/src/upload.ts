@@ -1,19 +1,26 @@
-import { randomUUID } from "node:crypto";
 import type {
   APIGatewayProxyEventV2,
   APIGatewayProxyStructuredResultV2,
 } from "aws-lambda";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, DeleteObjectsCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import type { ErrorResponse, UploadResponse } from "@hostahtml/shared";
 import { verifyGoogleToken } from "./auth.js";
 import {
   decodeBody,
   getContentLength,
   MAX_UPLOAD_BYTES,
-  validateUpload,
 } from "./validate.js";
 import { jsonResponse } from "./jsonResponse.js";
-import { mintToken, putShareRecord } from "./shareTokens.js";
+import {
+  deleteShareRecord,
+  mintBundleId,
+  mintToken,
+  putShareRecord,
+} from "./shareTokens.js";
+import {
+  buildSingleHtmlBundleManifest,
+  buildZipBundleManifest,
+} from "./bundles.js";
 
 const s3 = new S3Client({});
 const SEVEN_DAYS = 7 * 24 * 60 * 60;
@@ -58,47 +65,70 @@ export async function handleUpload(
   let bodyBuf: Buffer;
   try {
     bodyBuf = decodeBody(event.body, event.isBase64Encoded ?? false);
-    validateUpload(bodyBuf);
+  } catch (e) {
+    throw e;
+  }
+
+  const bundleId = mintBundleId();
+  let manifest: ReturnType<typeof buildSingleHtmlBundleManifest>;
+  try {
+    manifest = isZipUpload(event)
+      ? buildZipBundleManifest(userId, bundleId, bodyBuf)
+      : buildSingleHtmlBundleManifest(userId, bundleId, bodyBuf);
   } catch (e) {
     const msg = (e as Error).message;
     if (msg.startsWith("File too large")) {
       return jsonResponse(413, { error: msg } satisfies ErrorResponse);
     }
-    if (msg.includes("does not look like HTML")) {
+    if (msg.includes("too large")) {
+      return jsonResponse(413, { error: msg } satisfies ErrorResponse);
+    }
+    if (
+      msg.includes("does not look like HTML") ||
+      msg.includes("Bundle") ||
+      msg.includes("Unsafe") ||
+      msg.includes("Duplicate")
+    ) {
       return jsonResponse(415, { error: msg } satisfies ErrorResponse);
     }
     throw e;
   }
 
-  const originalName = event.queryStringParameters?.filename ?? "upload.html";
-  const safeFilename = originalName.replace(/[^a-zA-Z0-9._-]/g, "_");
-  const key = `${userId}/${randomUUID()}-${Date.now()}-${safeFilename}`;
-
-  await s3.send(
-    new PutObjectCommand({
-      Bucket: process.env.BUCKET_NAME!,
-      Key: key,
-      Body: bodyBuf,
-      ContentType: "text/html; charset=utf-8",
-    })
-  );
-
   const shareToken = mintToken();
   const createdAt = Math.floor(Date.now() / 1000);
   const expiresAt = createdAt + SEVEN_DAYS;
-  await putShareRecord({
-    token: shareToken,
-    s3Key: key,
-    createdAt,
-    expiresAt,
-  });
+  try {
+    for (const file of manifest.files) {
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: process.env.BUCKET_NAME!,
+          Key: `${manifest.ownerUserId}/${manifest.bundleId}/${file.relativePath}`,
+          Body: file.body,
+          ContentType: file.contentType,
+        })
+      );
+    }
+
+    await putShareRecord({
+      token: shareToken,
+      ownerUserId: userId,
+      bundleId,
+      createdAt,
+      expiresAt,
+    });
+  } catch (e) {
+    await cleanupPartialBundle(manifest, shareToken);
+    throw e;
+  }
   const url = `${getShareBaseUrl()}/t/${shareToken}`;
 
-  console.log(`Uploaded ${key} (${bodyBuf.length} bytes)`);
+  console.log(
+    `Uploaded ${manifest.ownerUserId}/${manifest.bundleId}/ (${bodyBuf.length} bytes)`
+  );
 
   const payload: UploadResponse = {
     url,
-    key,
+    key: `${userId}/${bundleId}/`,
     expiresInDays: 7,
   };
   return jsonResponse(200, payload);
@@ -106,4 +136,41 @@ export async function handleUpload(
 
 function getShareBaseUrl(): string {
   return process.env.SHARE_BASE_URL!.replace(/\/+$/, "");
+}
+
+function isZipUpload(event: APIGatewayProxyEventV2): boolean {
+  const contentType =
+    event.headers["content-type"] ?? event.headers["Content-Type"] ?? "";
+  const filename = event.queryStringParameters?.filename ?? "";
+  return (
+    contentType.toLowerCase().includes("zip") ||
+    filename.toLowerCase().endsWith(".zip")
+  );
+}
+
+async function cleanupPartialBundle(
+  manifest: ReturnType<typeof buildSingleHtmlBundleManifest>,
+  shareToken: string
+): Promise<void> {
+  try {
+    await s3.send(
+      new DeleteObjectsCommand({
+        Bucket: process.env.BUCKET_NAME!,
+        Delete: {
+          Objects: manifest.files.map((file) => ({
+            Key: `${manifest.ownerUserId}/${manifest.bundleId}/${file.relativePath}`,
+          })),
+          Quiet: true,
+        },
+      })
+    );
+  } catch (cleanupError) {
+    console.warn("Failed to clean up partial bundle upload", cleanupError);
+  }
+
+  try {
+    await deleteShareRecord(shareToken);
+  } catch (cleanupError) {
+    console.warn("Failed to clean up partial bundle token", cleanupError);
+  }
 }

@@ -10,3 +10,13 @@ it("calls onFile when a file is chosen", async () => {
   await fireEvent.change(input, { target: { files: [file] } });
   expect(onFile).toHaveBeenCalledWith(file);
 });
+
+it("accepts HTML and zip bundle files", () => {
+  const { container, getByText } = render(Dropzone, {
+    props: { uploading: false, onFile: vi.fn() },
+  });
+  const input = container.querySelector("input[type='file']") as HTMLInputElement;
+
+  expect(input.accept).toBe(".html,text/html,.zip,application/zip");
+  expect(getByText(/HTML file or zip bundle/i)).toBeInTheDocument();
+});

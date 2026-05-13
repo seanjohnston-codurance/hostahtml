@@ -24,8 +24,9 @@ Per ADR-0007, every upload should be stored as a bundle under `{ownerUserId}/{bu
 - [ ] Referenced assets inside the bundle are stored and served so relative paths from the entry HTML work.
 - [ ] Stored assets include appropriate S3 `ContentType` metadata.
 - [ ] Common archive noise such as `__MACOSX/**`, `.DS_Store`, and `Thumbs.db` is ignored.
-- [ ] Unsafe paths, obvious root-relative references, and up-directory references such as `../` are rejected at upload time with useful errors.
-- [ ] Served bundle paths reject absolute-path syntax and any `..` segment before deriving S3 keys.
+- [ ] Unsafe stored paths and obvious root-relative references are rejected at upload time with useful errors.
+- [ ] Page references may use up-directory paths such as `../index.html` when they resolve inside the bundle.
+- [ ] Served bundle paths reject absolute-path syntax and any `..` traversal that would escape above the bundle root before deriving S3 keys.
 - [ ] Text-like files are scanned for escaping references; large binary assets are not decoded as text during validation.
 - [ ] Partial upload failures trigger best-effort cleanup of the bundle prefix and any created token record.
 - [ ] Existing single-file HTML upload behaviour remains supported unless the proposal explicitly changes it.

@@ -5,13 +5,17 @@ const {
   sendMock,
   getSignedUrlMock,
   mintTokenMock,
+  mintBundleIdMock,
   putShareRecordMock,
+  deleteShareRecordMock,
 } = vi.hoisted(() => ({
     verifyGoogleTokenMock: vi.fn(),
     sendMock: vi.fn(),
     getSignedUrlMock: vi.fn(),
     mintTokenMock: vi.fn(),
+    mintBundleIdMock: vi.fn(),
     putShareRecordMock: vi.fn(),
+    deleteShareRecordMock: vi.fn(),
   }));
 
 vi.mock("./auth.js", () => ({
@@ -23,6 +27,12 @@ vi.mock("@aws-sdk/client-s3", () => ({
     send = sendMock;
   },
   PutObjectCommand: class {
+    input: unknown;
+    constructor(input: unknown) {
+      this.input = input;
+    }
+  },
+  DeleteObjectsCommand: class {
     input: unknown;
     constructor(input: unknown) {
       this.input = input;
@@ -42,10 +52,13 @@ vi.mock("@aws-sdk/s3-request-presigner", () => ({
 
 vi.mock("./shareTokens.js", () => ({
   mintToken: mintTokenMock,
+  mintBundleId: mintBundleIdMock,
   putShareRecord: putShareRecordMock,
+  deleteShareRecord: deleteShareRecordMock,
 }));
 
 import { handleUpload } from "./upload.js";
+import { strToU8, zipSync } from "fflate";
 
 describe("handleUpload", () => {
   beforeEach(() => {
@@ -58,12 +71,16 @@ describe("handleUpload", () => {
     sendMock.mockReset();
     getSignedUrlMock.mockReset();
     mintTokenMock.mockReset();
+    mintBundleIdMock.mockReset();
     putShareRecordMock.mockReset();
+    deleteShareRecordMock.mockReset();
     verifyGoogleTokenMock.mockResolvedValue("user-1");
     sendMock.mockResolvedValue({});
     getSignedUrlMock.mockResolvedValue("https://signed.example/object");
     mintTokenMock.mockReturnValue("01ARZ3NDEKTSV4RRFFQ69G5FAV");
+    mintBundleIdMock.mockReturnValue("01HZX3NDEKTSV4RRFFQ69G5BND");
     putShareRecordMock.mockResolvedValue(undefined);
+    deleteShareRecordMock.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -101,6 +118,16 @@ describe("handleUpload", () => {
       body: "<html><body>hi</body></html>",
       ...overrides,
     } as import("aws-lambda").APIGatewayProxyEventV2;
+  }
+
+  function zipBody(files: Record<string, string>): string {
+    return Buffer.from(
+      zipSync(
+        Object.fromEntries(
+          Object.entries(files).map(([path, content]) => [path, strToU8(content)])
+        )
+      )
+    ).toString("base64");
   }
 
   it("returns 401 on missing token", async () => {
@@ -158,12 +185,12 @@ describe("handleUpload", () => {
       expiresInDays: 7,
     });
     expect(typeof body.key).toBe("string");
-    expect(body.key).toMatch(/^user-1\/[0-9a-f-]{36}-\d+-/);
+    expect(body.key).toBe("user-1/01HZX3NDEKTSV4RRFFQ69G5BND/");
     expect(sendMock).toHaveBeenCalledWith(
       expect.objectContaining({
         input: {
           Bucket: "test-bucket",
-          Key: body.key,
+          Key: "user-1/01HZX3NDEKTSV4RRFFQ69G5BND/index.html",
           Body: Buffer.from("<html><body>x</body></html>", "utf8"),
           ContentType: "text/html; charset=utf-8",
         },
@@ -171,7 +198,8 @@ describe("handleUpload", () => {
     );
     expect(putShareRecordMock).toHaveBeenCalledWith({
       token: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-      s3Key: body.key,
+      ownerUserId: "user-1",
+      bundleId: "01HZX3NDEKTSV4RRFFQ69G5BND",
       createdAt: 1778662800,
       expiresAt: 1779267600,
     });
@@ -231,5 +259,229 @@ describe("handleUpload", () => {
       })
     );
     expect(res.statusCode).toBe(200);
+  });
+
+  it("uploads a zip bundle with index.html and assets", async () => {
+    const res = await handleUpload(
+      baseEvent({
+        headers: {
+          authorization: "Bearer ok",
+          "content-type": "application/zip",
+        },
+        body: zipBody({
+          "index.html":
+            '<html><head><link rel="stylesheet" href="assets/app.css"><script type="module" src="assets/app.js"></script></head><body>x</body></html>',
+          "assets/app.css": "body { color: rebeccapurple; }",
+          "assets/app.js": 'console.log("ok");',
+        }),
+        isBase64Encoded: true,
+      })
+    );
+
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body ?? "{}");
+    expect(body.key).toBe("user-1/01HZX3NDEKTSV4RRFFQ69G5BND/");
+    expect(sendMock).toHaveBeenCalledTimes(3);
+    expect(sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.objectContaining({
+          Key: "user-1/01HZX3NDEKTSV4RRFFQ69G5BND/index.html",
+          ContentType: "text/html; charset=utf-8",
+        }),
+      })
+    );
+    expect(sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.objectContaining({
+          Key: "user-1/01HZX3NDEKTSV4RRFFQ69G5BND/assets/app.css",
+          ContentType: "text/css; charset=utf-8",
+        }),
+      })
+    );
+    expect(sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.objectContaining({
+          Key: "user-1/01HZX3NDEKTSV4RRFFQ69G5BND/assets/app.js",
+          ContentType: "text/javascript; charset=utf-8",
+        }),
+      })
+    );
+    expect(putShareRecordMock).toHaveBeenCalledWith({
+      token: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      ownerUserId: "user-1",
+      bundleId: "01HZX3NDEKTSV4RRFFQ69G5BND",
+      createdAt: 1778662800,
+      expiresAt: 1779267600,
+    });
+  });
+
+  it("rejects a zip bundle without a root index.html", async () => {
+    const res = await handleUpload(
+      baseEvent({
+        headers: {
+          authorization: "Bearer ok",
+          "content-type": "application/zip",
+        },
+        body: zipBody({ "page.html": "<html><body>x</body></html>" }),
+        isBase64Encoded: true,
+      })
+    );
+
+    expect(res.statusCode).toBe(415);
+    expect(JSON.parse(res.body ?? "{}").error).toMatch(/index\.html/);
+    expect(sendMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects invalid zip archives with a useful error", async () => {
+    const res = await handleUpload(
+      baseEvent({
+        headers: {
+          authorization: "Bearer ok",
+          "content-type": "application/zip",
+        },
+        body: Buffer.from("not a zip", "utf8").toString("base64"),
+        isBase64Encoded: true,
+      })
+    );
+
+    expect(res.statusCode).toBe(415);
+    expect(JSON.parse(res.body ?? "{}").error).toBe(
+      "Bundle is not a valid zip archive"
+    );
+    expect(sendMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects zip bundle paths that traverse upward", async () => {
+    const res = await handleUpload(
+      baseEvent({
+        headers: {
+          authorization: "Bearer ok",
+          "content-type": "application/zip",
+        },
+        body: zipBody({
+          "index.html": "<html><body>x</body></html>",
+          "../secret.css": "body {}",
+        }),
+        isBase64Encoded: true,
+      })
+    );
+
+    expect(res.statusCode).toBe(415);
+    expect(JSON.parse(res.body ?? "{}").error).toMatch(/Unsafe bundle path/);
+    expect(sendMock).not.toHaveBeenCalled();
+  });
+
+  it("ignores common archive noise entries", async () => {
+    const res = await handleUpload(
+      baseEvent({
+        headers: {
+          authorization: "Bearer ok",
+          "content-type": "application/zip",
+        },
+        body: zipBody({
+          "index.html": "<html><body>x</body></html>",
+          "__MACOSX/._index.html": "junk",
+          ".DS_Store": "junk",
+          "assets/Thumbs.db": "junk",
+        }),
+        isBase64Encoded: true,
+      })
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(sendMock).toHaveBeenCalledTimes(1);
+    expect(sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.objectContaining({
+          Key: "user-1/01HZX3NDEKTSV4RRFFQ69G5BND/index.html",
+        }),
+      })
+    );
+  });
+
+  it("allows up-directory references inside the bundle", async () => {
+    const res = await handleUpload(
+      baseEvent({
+        headers: {
+          authorization: "Bearer ok",
+          "content-type": "application/zip",
+        },
+        body: zipBody({
+          "index.html": '<html><body><a href="docs/page.html">docs</a></body></html>',
+          "docs/page.html": '<html><body><a href="../index.html">home</a></body></html>',
+        }),
+        isBase64Encoded: true,
+      })
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.objectContaining({
+          Key: "user-1/01HZX3NDEKTSV4RRFFQ69G5BND/docs/page.html",
+        }),
+      })
+    );
+  });
+
+  it("rejects root-relative references in text-like files", async () => {
+    const res = await handleUpload(
+      baseEvent({
+        headers: {
+          authorization: "Bearer ok",
+          "content-type": "application/zip",
+        },
+        body: zipBody({
+          "index.html": '<html><body><script src="assets/app.js"></script></body></html>',
+          "assets/app.js": 'import "/assets/shared.js";',
+        }),
+        isBase64Encoded: true,
+      })
+    );
+
+    expect(res.statusCode).toBe(415);
+    expect(JSON.parse(res.body ?? "{}").error).toMatch(/root-relative reference/);
+    expect(sendMock).not.toHaveBeenCalled();
+  });
+
+  it("best-effort cleans up bundle objects when a partial upload fails", async () => {
+    sendMock
+      .mockResolvedValueOnce({})
+      .mockRejectedValueOnce(new Error("s3 exploded"))
+      .mockResolvedValueOnce({});
+
+    await expect(
+      handleUpload(
+        baseEvent({
+          headers: {
+            authorization: "Bearer ok",
+            "content-type": "application/zip",
+          },
+          body: zipBody({
+            "index.html": "<html><body>x</body></html>",
+            "assets/app.css": "body {}",
+          }),
+          isBase64Encoded: true,
+        })
+      )
+    ).rejects.toThrow("s3 exploded");
+
+    expect(sendMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        input: {
+          Bucket: "test-bucket",
+          Delete: {
+            Objects: [
+              { Key: "user-1/01HZX3NDEKTSV4RRFFQ69G5BND/index.html" },
+              { Key: "user-1/01HZX3NDEKTSV4RRFFQ69G5BND/assets/app.css" },
+            ],
+            Quiet: true,
+          },
+        },
+      })
+    );
+    expect(deleteShareRecordMock).toHaveBeenCalledWith(
+      "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+    );
   });
 });

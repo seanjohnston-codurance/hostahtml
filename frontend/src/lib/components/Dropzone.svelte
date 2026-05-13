@@ -64,10 +64,15 @@
           />
         </svg>
       </div>
-      <span class="dz-label">Drop your <code>.html</code> file here</span>
+      <span class="dz-label">Drop your HTML file or zip bundle here</span>
       <label class="dz-browse">
         or <span class="dz-link">browse to select</span>
-        <input id="file-input" type="file" accept=".html,text/html" onchange={onFileInput} />
+        <input
+          id="file-input"
+          type="file"
+          accept=".html,text/html,.zip,application/zip"
+          onchange={onFileInput}
+        />
       </label>
     </div>
   {/if}
@@ -147,15 +152,6 @@
     font-size: 15px;
     font-weight: 600;
     color: #4d6070;
-  }
-
-  .dz-label code {
-    font-family: "DM Mono", monospace;
-    font-size: 13px;
-    background: #f0f3f7;
-    padding: 1px 6px;
-    border-radius: 4px;
-    color: #1a2535;
   }
 
   .dz-browse {

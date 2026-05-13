@@ -83,7 +83,7 @@ describe("+page", () => {
 
     googleSignInCallback({ credential });
 
-    await screen.findByText("Share an HTML file");
+    await screen.findByText("Share an HTML file or zip bundle");
 
     const file = new File(["<html><body>Hello</body></html>"], "hello world.html", {
       type: "text/html",
@@ -138,7 +138,7 @@ describe("+page", () => {
       credential: credentialFor({ email: "sean@codurance.com" }),
     });
 
-    await screen.findByText("Share an HTML file");
+    await screen.findByText("Share an HTML file or zip bundle");
 
     const file = new File(["nope"], "notes.txt", { type: "text/plain" });
     const input = document.querySelector<HTMLInputElement>("input[type='file']");
@@ -147,6 +147,43 @@ describe("+page", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Upload failed (415): Body does not look like HTML"
+    );
+  });
+
+  it("sends zip uploads with the zip content type", async () => {
+    const credential = credentialFor({ email: "sean@codurance.com" });
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        url: "https://share.example/t/01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        key: "user-1/01HZX3NDEKTSV4RRFFQ69G5BND/",
+        expiresInDays: 7,
+      }),
+    });
+
+    render(Page);
+
+    await loadGoogleScript();
+    googleSignInCallback({ credential });
+    await screen.findByText("Share an HTML file or zip bundle");
+
+    const file = new File(["zip-bytes"], "bundle.zip", {
+      type: "application/zip",
+    });
+    const input = document.querySelector<HTMLInputElement>("input[type='file']");
+    expect(input).not.toBeNull();
+    await fireEvent.change(input!, { target: { files: [file] } });
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.example/upload?filename=bundle.zip",
+      expect.objectContaining({
+        headers: {
+          "Content-Type": "application/zip",
+          Authorization: `Bearer ${credential}`,
+        },
+        body: file,
+      })
     );
   });
 });

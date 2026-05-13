@@ -69,6 +69,39 @@ describe("handler", () => {
     expect(res.statusCode).toBe(302);
   });
 
+  it("dispatches nested GET /t/{token}/{path} to the share resolver", async () => {
+    handleShareGetMock.mockResolvedValueOnce({ statusCode: 200, body: "" });
+
+    const res = await handler(
+      minimalEvent("GET", "/t/01ARZ3NDEKTSV4RRFFQ69G5FAV/assets/app.css", {
+        token: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        proxy: "assets/app.css",
+      })
+    );
+
+    expect(handleShareGetMock).toHaveBeenCalledWith(
+      "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "assets/app.css"
+    );
+    expect(res.statusCode).toBe(200);
+  });
+
+  it("accepts API Gateway greedy path parameters named proxy+", async () => {
+    handleShareGetMock.mockResolvedValueOnce({ statusCode: 200, body: "" });
+
+    await handler(
+      minimalEvent("GET", "/t/01ARZ3NDEKTSV4RRFFQ69G5FAV/assets/app.css", {
+        token: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "proxy+": "assets/app.css",
+      })
+    );
+
+    expect(handleShareGetMock).toHaveBeenCalledWith(
+      "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "assets/app.css"
+    );
+  });
+
   it("returns 200 for GET /", async () => {
     const res = await handler(minimalEvent("GET", "/"));
     expect(res.statusCode).toBe(200);
