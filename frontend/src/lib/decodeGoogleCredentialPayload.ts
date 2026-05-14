@@ -1,5 +1,6 @@
 export type GoogleCredentialJwtPayload = {
   email?: string;
+  exp?: number;
 };
 
 /**

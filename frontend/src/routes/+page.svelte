@@ -1,25 +1,16 @@
 <script lang="ts">
   import type { UploadResponse } from "@hostahtml/shared";
-  import { dev } from "$app/environment";
   import { onMount } from "svelte";
-  import {
-    PUBLIC_API_URL,
-    PUBLIC_AUTH_MODE,
-    PUBLIC_GOOGLE_CLIENT_ID,
-  } from "$env/static/public";
+  import { PUBLIC_API_URL } from "$env/static/public";
+  import { authState, authToken, initialiseAuth } from "$lib/auth.svelte.js";
   import Dropzone from "$lib/components/Dropzone.svelte";
   import ResultCard from "$lib/components/ResultCard.svelte";
   import SignInPane from "$lib/components/SignInPane.svelte";
   import SiteFooter from "$lib/components/SiteFooter.svelte";
   import SiteHeader from "$lib/components/SiteHeader.svelte";
-  import { CODURANCE_GOOGLE_HOSTED_DOMAIN } from "$lib/coduranceGoogle.js";
-  import { decodeGoogleCredentialPayload } from "$lib/decodeGoogleCredentialPayload.js";
 
   const GOOGLE_BUTTON_ID = "google-signin-btn";
-  const localAuth = dev && PUBLIC_AUTH_MODE === "local";
 
-  let token = $state<string | null>(null);
-  let userEmail = $state<string | null>(null);
   let uploading = $state(false);
   let result = $state<UploadResponse | null>(null);
   let error = $state<string | null>(null);
@@ -27,37 +18,12 @@
   let selectedFile = $state<File | null>(null);
   let draft = $state(false);
 
-  function onGoogleSignIn(response: { credential: string }) {
-    token = response.credential;
-    const payload = decodeGoogleCredentialPayload(response.credential);
-    userEmail = payload?.email ?? null;
-  }
-
   onMount(() => {
-    if (localAuth) {
-      token = "dev-token";
-      userEmail = "local@hostahtml.dev";
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.onload = () => {
-      google.accounts.id.initialize({
-        client_id: PUBLIC_GOOGLE_CLIENT_ID,
-        callback: onGoogleSignIn,
-        hd: CODURANCE_GOOGLE_HOSTED_DOMAIN,
-      });
-      const el = document.getElementById(GOOGLE_BUTTON_ID);
-      if (el) {
-        google.accounts.id.renderButton(el, { theme: "outline", size: "large" });
-      }
-    };
-    document.head.appendChild(script);
-    return () => script.remove();
+    initialiseAuth(GOOGLE_BUTTON_ID);
   });
 
   async function uploadSelectedFile() {
+    const token = authToken();
     if (!token || !selectedFile) return;
     uploading = true;
     error = null;
@@ -113,10 +79,10 @@
 <div class="page">
   <span class="bg-glyph" aria-hidden="true">&lt;/&gt;</span>
 
-  <SiteHeader {userEmail} currentPath="/" />
+  <SiteHeader userEmail={authState.userEmail} currentPath="/" />
 
   <main class="main">
-    {#if !token}
+    {#if !authState.token}
       <SignInPane googleButtonId={GOOGLE_BUTTON_ID} />
     {:else}
       <div class="upload-pane">

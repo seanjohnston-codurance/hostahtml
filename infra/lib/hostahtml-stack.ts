@@ -85,6 +85,17 @@ export class HostahtmlStack extends cdk.Stack {
       timeToLiveAttribute: "expiresAt",
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
+    shareTokensTable.addGlobalSecondaryIndex({
+      indexName: "OwnerExpiresAtIndex",
+      partitionKey: {
+        name: "ownerUserId",
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: {
+        name: "expiresAt",
+        type: dynamodb.AttributeType.NUMBER,
+      },
+    });
 
     // ── HTTP API v2 ────────────────────────────────────────────────────────────
     const httpApi = new apigwv2.HttpApi(this, "HttpApi", {
@@ -94,6 +105,8 @@ export class HostahtmlStack extends cdk.Stack {
         allowMethods: [
           apigwv2.CorsHttpMethod.GET,
           apigwv2.CorsHttpMethod.POST,
+          apigwv2.CorsHttpMethod.PATCH,
+          apigwv2.CorsHttpMethod.DELETE,
           apigwv2.CorsHttpMethod.OPTIONS,
         ],
         allowHeaders: ["content-type", "authorization"],
@@ -138,6 +151,18 @@ export class HostahtmlStack extends cdk.Stack {
     httpApi.addRoutes({
       path: "/upload",
       methods: [apigwv2.HttpMethod.POST],
+      integration,
+    });
+
+    httpApi.addRoutes({
+      path: "/shares",
+      methods: [apigwv2.HttpMethod.GET],
+      integration,
+    });
+
+    httpApi.addRoutes({
+      path: "/shares/{token}",
+      methods: [apigwv2.HttpMethod.PATCH, apigwv2.HttpMethod.DELETE],
       integration,
     });
 

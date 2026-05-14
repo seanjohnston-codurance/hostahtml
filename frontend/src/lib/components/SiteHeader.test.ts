@@ -20,10 +20,18 @@ it("links to the changelog", () => {
   );
 });
 
-it("marks the current page in the navigation", () => {
-  render(SiteHeader, { props: { userEmail: null, currentPath: "/changelog" } });
+it("links to the dashboard", () => {
+  render(SiteHeader, { props: { userEmail: null } });
+  expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute(
+    "href",
+    "/dashboard"
+  );
+});
 
-  expect(screen.getByRole("link", { name: "What's new?" })).toHaveAttribute(
+it("marks the current page in the navigation", () => {
+  render(SiteHeader, { props: { userEmail: null, currentPath: "/dashboard" } });
+
+  expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute(
     "aria-current",
     "page"
   );

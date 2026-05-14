@@ -6,5 +6,8 @@
 	"/changelog": [
 		"src/routes/changelog/+page.server.ts",
 		"src/routes/+layout.ts"
+	],
+	"/dashboard": [
+		"src/routes/+layout.ts"
 	]
 }

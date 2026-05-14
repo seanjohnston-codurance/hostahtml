@@ -45,6 +45,13 @@
       >
         What's new?
       </a>
+      <a
+        class:active={currentPath === "/dashboard"}
+        href="/dashboard"
+        aria-current={currentPath === "/dashboard" ? "page" : undefined}
+      >
+        Dashboard
+      </a>
     </nav>
 
     {#if userEmail}

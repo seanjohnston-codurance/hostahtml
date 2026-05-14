@@ -6,7 +6,13 @@ it("invokes onCopy when copy button is pressed", async () => {
   const onCopy = vi.fn();
   render(ResultCard, {
     props: {
-      result: { url: "https://example.com/o", key: "k1", expiresInDays: 7 },
+      result: {
+        url: "https://example.com/o",
+        key: "k1",
+        createdAt: 1778662800,
+        expiresAt: 1779267600,
+        expiresInDays: 7,
+      },
       copied: false,
       onCopy,
     },
@@ -21,6 +27,8 @@ it("labels draft links as not for circulation", () => {
       result: {
         url: "https://example.com/o",
         key: "k1",
+        createdAt: 1778662800,
+        expiresAt: 1779267600,
         expiresInDays: 7,
         draft: true,
       },

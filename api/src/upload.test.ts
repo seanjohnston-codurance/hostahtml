@@ -182,6 +182,8 @@ describe("handleUpload", () => {
     const body = JSON.parse(res.body ?? "{}");
     expect(body).toMatchObject({
       url: "https://share.example/t/01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      createdAt: 1778662800,
+      expiresAt: 1779267600,
       expiresInDays: 7,
     });
     expect(typeof body.key).toBe("string");
@@ -200,6 +202,8 @@ describe("handleUpload", () => {
       token: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
       ownerUserId: "user-1",
       bundleId: "01HZX3NDEKTSV4RRFFQ69G5BND",
+      filename: "index.html",
+      paths: ["index.html"],
       createdAt: 1778662800,
       expiresAt: 1779267600,
     });
@@ -211,7 +215,7 @@ describe("handleUpload", () => {
       baseEvent({
         headers: { authorization: "Bearer ok" },
         queryStringParameters: { filename: "draft.html", draft: "1" },
-        body: "<html><body>x</body></html>",
+        body: "<html><head><title> Draft &amp; Review </title></head><body>x</body></html>",
       })
     );
 
@@ -224,6 +228,9 @@ describe("handleUpload", () => {
       token: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
       ownerUserId: "user-1",
       bundleId: "01HZX3NDEKTSV4RRFFQ69G5BND",
+      filename: "draft.html",
+      title: "Draft & Review",
+      paths: ["index.html"],
       createdAt: 1778662800,
       expiresAt: 1779267600,
       draft: true,
@@ -294,7 +301,7 @@ describe("handleUpload", () => {
         },
         body: zipBody({
           "index.html":
-            '<html><head><link rel="stylesheet" href="assets/app.css"><script type="module" src="assets/app.js"></script></head><body>x</body></html>',
+            '<html><head><title>Bundle</title><link rel="stylesheet" href="assets/app.css"><script type="module" src="assets/app.js"></script></head><body>x</body></html>',
           "assets/app.css": "body { color: rebeccapurple; }",
           "assets/app.js": 'console.log("ok");',
         }),
@@ -334,6 +341,9 @@ describe("handleUpload", () => {
       token: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
       ownerUserId: "user-1",
       bundleId: "01HZX3NDEKTSV4RRFFQ69G5BND",
+      filename: "index.html",
+      title: "Bundle",
+      paths: ["index.html", "assets/app.css", "assets/app.js"],
       createdAt: 1778662800,
       expiresAt: 1779267600,
     });

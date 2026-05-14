@@ -2,6 +2,17 @@
 
 User-facing updates for HostaHTML.
 
+## 2026-05-14
+
+### Added
+
+- Added a dashboard where signed-in users can see active shares, open live links, toggle draft state, and delete shares.
+
+### Changed
+
+- Upload responses now include exact creation and expiry times so the app can support future dynamic share lifetimes.
+- Deleted shares stay visible in the dashboard until they expire, but their links are no longer clickable.
+
 ## 2026-05-13
 
 ### Added

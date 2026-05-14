@@ -103,9 +103,43 @@ describe("HostahtmlStack", () => {
     });
   });
 
+  it("indexes share-token records by owner and expiry for dashboard listing", () => {
+    template.hasResourceProperties("AWS::DynamoDB::Table", {
+      GlobalSecondaryIndexes: Match.arrayWith([
+        Match.objectLike({
+          IndexName: "OwnerExpiresAtIndex",
+          KeySchema: [
+            { AttributeName: "ownerUserId", KeyType: "HASH" },
+            { AttributeName: "expiresAt", KeyType: "RANGE" },
+          ],
+        }),
+      ]),
+    });
+  });
+
+  it("allows dashboard API methods through CORS", () => {
+    template.hasResourceProperties("AWS::ApiGatewayV2::Api", {
+      CorsConfiguration: Match.objectLike({
+        AllowMethods: Match.arrayWith(["GET", "POST", "PATCH", "DELETE", "OPTIONS"]),
+      }),
+    });
+  });
+
   it("routes nested share-token paths to the API Lambda", () => {
     template.hasResourceProperties("AWS::ApiGatewayV2::Route", {
       RouteKey: "GET /t/{token}/{proxy+}",
+    });
+  });
+
+  it("routes dashboard share APIs to the API Lambda", () => {
+    template.hasResourceProperties("AWS::ApiGatewayV2::Route", {
+      RouteKey: "GET /shares",
+    });
+    template.hasResourceProperties("AWS::ApiGatewayV2::Route", {
+      RouteKey: "PATCH /shares/{token}",
+    });
+    template.hasResourceProperties("AWS::ApiGatewayV2::Route", {
+      RouteKey: "DELETE /shares/{token}",
     });
   });
 

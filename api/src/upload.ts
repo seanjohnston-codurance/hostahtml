@@ -110,6 +110,9 @@ export async function handleUpload(
       token: shareToken,
       ownerUserId: userId,
       bundleId,
+      filename: uploadFilename(event),
+      ...optionalTitle(extractRootTitle(manifest)),
+      paths: manifest.files.map((file) => file.relativePath),
       createdAt,
       expiresAt,
         ...(draft ? { draft: true } : {}),
@@ -127,6 +130,8 @@ export async function handleUpload(
   const payload: UploadResponse = {
     url,
     key: `${userId}/${bundleId}/`,
+    createdAt,
+    expiresAt,
     expiresInDays: 7,
     ...(draft ? { draft: true } : {}),
   };
@@ -150,6 +155,40 @@ function isZipUpload(event: APIGatewayProxyEventV2): boolean {
 function isDraftUpload(event: APIGatewayProxyEventV2): boolean {
   const value = event.queryStringParameters?.draft;
   return value === "1" || value?.toLowerCase() === "true";
+}
+
+function uploadFilename(event: APIGatewayProxyEventV2): string {
+  const filename = event.queryStringParameters?.filename?.trim();
+  return filename ? filename : "index.html";
+}
+
+function extractRootTitle(
+  manifest: ReturnType<typeof buildSingleHtmlBundleManifest>
+): string | undefined {
+  const root = manifest.files.find((file) => file.relativePath === "index.html");
+  if (!root) return undefined;
+  const match = /<title\b[^>]*>([\s\S]*?)<\/title>/i.exec(
+    root.body.toString("utf8")
+  );
+  if (!match) return undefined;
+  const title = decodeBasicHtmlEntities(match[1])
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
+  return title.length > 0 ? title : undefined;
+}
+
+function decodeBasicHtmlEntities(value: string): string {
+  return value
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'");
+}
+
+function optionalTitle(title: string | undefined): { title?: string } {
+  return title ? { title } : {};
 }
 
 async function cleanupPartialBundle(

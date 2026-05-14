@@ -29,15 +29,16 @@ declare module "$app/types" {
 	type MatcherParam<M> = M extends (param : string) => param is (infer U extends string) ? U : string;
 
 	export interface AppTypes {
-		RouteId(): "/" | "/changelog";
+		RouteId(): "/" | "/changelog" | "/dashboard";
 		RouteParams(): {
 			
 		};
 		LayoutParams(): {
 			"/": Record<string, never>;
-			"/changelog": Record<string, never>
+			"/changelog": Record<string, never>;
+			"/dashboard": Record<string, never>
 		};
-		Pathname(): "/" | "/changelog";
+		Pathname(): "/" | "/changelog" | "/dashboard";
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
 		Asset(): "/.gitkeep" | string & {};
 	}

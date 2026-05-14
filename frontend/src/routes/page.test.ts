@@ -21,6 +21,7 @@ vi.mock("$app/environment", () => ({
 }));
 
 import Page from "./+page.svelte";
+import { resetAuthForTest } from "$lib/auth.svelte.js";
 
 type GoogleCredentialCallback = (response: { credential: string }) => void;
 
@@ -54,6 +55,11 @@ describe("+page", () => {
     vi.useFakeTimers();
     testEnv.dev = false;
     testEnv.publicAuthMode = "google";
+    sessionStorage.clear();
+    resetAuthForTest();
+    document.head
+      .querySelectorAll('script[src="https://accounts.google.com/gsi/client"]')
+      .forEach((script) => script.remove());
 
     googleSignInCallback = () => {};
     vi.stubGlobal("google", {

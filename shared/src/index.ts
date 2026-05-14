@@ -1,1 +1,7 @@
-export type { UploadResponse, ErrorResponse } from "./api.js";
+export type {
+  UploadResponse,
+  ShareSummary,
+  ListSharesResponse,
+  UpdateShareResponse,
+  ErrorResponse,
+} from "./api.js";

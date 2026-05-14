@@ -5,6 +5,11 @@ import type {
 import { jsonResponse } from "./jsonResponse.js";
 import { handleUpload } from "./upload.js";
 import { handleShareGet } from "./shareResolve.js";
+import {
+  handleDeleteShare,
+  handleListShares,
+  handleUpdateShareDraft,
+} from "./shares.js";
 
 export const handler = async (
   e: APIGatewayProxyEventV2
@@ -13,6 +18,12 @@ export const handler = async (
   const path = e.rawPath;
   if (method === "GET" && path === "/")
     return jsonResponse(200, { status: "ok" });
+  if (method === "GET" && path === "/shares") return handleListShares(e);
+  if (path.startsWith("/shares/")) {
+    const token = e.pathParameters?.token ?? path.slice("/shares/".length);
+    if (method === "PATCH") return handleUpdateShareDraft(e, token);
+    if (method === "DELETE") return handleDeleteShare(e, token);
+  }
   if (method === "POST" && path === "/upload") return handleUpload(e);
   if (method === "GET" && path.startsWith("/t/")) {
     const { token, relativePath } = parseSharePath(e);
