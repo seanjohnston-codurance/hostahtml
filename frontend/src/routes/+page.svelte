@@ -191,7 +191,6 @@
       </div>
     {/if}
 
-    <a class="updates-link" href="/changelog">See what's new</a>
   </main>
 
   <SiteFooter />
@@ -401,19 +400,5 @@
     font-weight: 600;
     color: #c44a13;
     line-height: 1.5;
-  }
-
-  .updates-link {
-    color: rgba(255, 255, 255, 0.46);
-    font-size: 0.78rem;
-    font-weight: 800;
-    letter-spacing: 0.04em;
-    text-decoration: none;
-    text-transform: uppercase;
-    transition: color 0.18s ease;
-  }
-
-  .updates-link:hover {
-    color: #fff;
   }
 </style>

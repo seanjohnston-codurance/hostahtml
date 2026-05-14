@@ -144,13 +144,10 @@ describe("+page", () => {
     expect(screen.getByRole("button", { name: /copy link/i })).toBeInTheDocument();
   });
 
-  it("links to update notes from the homepage", () => {
+  it("does not show an extra update notes link on the homepage", () => {
     render(Page);
 
-    expect(screen.getByRole("link", { name: /see what's new/i })).toHaveAttribute(
-      "href",
-      "/changelog"
-    );
+    expect(screen.queryByRole("link", { name: /see what's new/i })).not.toBeInTheDocument();
   });
 
   it("uses the development token without loading Google Sign-In in local auth mode", async () => {

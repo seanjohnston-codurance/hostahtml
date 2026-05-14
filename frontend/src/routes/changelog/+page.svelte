@@ -19,26 +19,23 @@
   <SiteHeader userEmail={null} currentPath="/changelog" />
 
   <main class="main">
-    <section class="hero" aria-labelledby="changelog-title">
-      <a class="back-link" href="/">Back to uploader</a>
+    <section class="hero" aria-label="Release notes">
       <p class="eyebrow">Release notes</p>
-      <h1 id="changelog-title">{data.changelog.title}</h1>
-      <p class="intro">{data.changelog.intro}</p>
     </section>
 
     <section class="timeline" aria-label="Changelog entries">
-      {#each data.changelog.entries as entry}
+      {#each data.changelog.entries as entry (entry.date)}
         <article class="entry">
           <div class="date-block">
             <time datetime={entry.date}>{entry.displayDate}</time>
           </div>
 
           <div class="entry-card">
-            {#each entry.sections as section}
+            {#each entry.sections as section (section.heading)}
               <section class="change-section" aria-labelledby={`${entry.date}-${section.heading}`}>
                 <h2 id={`${entry.date}-${section.heading}`}>{section.heading}</h2>
                 <ul>
-                  {#each section.items as item}
+                  {#each section.items as item (item)}
                     <li>{item}</li>
                   {/each}
                 </ul>
@@ -86,31 +83,16 @@
     z-index: 10;
     width: min(980px, calc(100% - 2rem));
     margin: 0 auto;
-    padding: 4.5rem 0 5rem;
+    padding: 3rem 0 4rem;
   }
 
   .hero {
     max-width: 680px;
-    margin-bottom: 3.25rem;
-  }
-
-  .back-link {
-    display: inline-flex;
-    align-items: center;
     margin-bottom: 2rem;
-    color: rgba(255, 255, 255, 0.62);
-    font-size: 0.83rem;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    text-decoration: none;
-  }
-
-  .back-link:hover {
-    color: #fff;
   }
 
   .eyebrow {
-    margin: 0 0 0.7rem;
+    margin: 0;
     color: #e8591a;
     font-size: 0.72rem;
     font-weight: 800;
@@ -118,40 +100,22 @@
     text-transform: uppercase;
   }
 
-  h1 {
-    margin: 0;
-    color: #fff;
-    font-size: clamp(3rem, 8vw, 6.8rem);
-    font-weight: 800;
-    letter-spacing: -0.075em;
-    line-height: 0.92;
-  }
-
-  .intro {
-    max-width: 34rem;
-    margin: 1.1rem 0 0;
-    color: rgba(255, 255, 255, 0.62);
-    font-size: clamp(1rem, 2vw, 1.18rem);
-    font-weight: 600;
-    line-height: 1.6;
-  }
-
   .timeline {
     display: grid;
-    gap: 1.35rem;
+    gap: 1rem;
   }
 
   .entry {
     display: grid;
     grid-template-columns: 12rem minmax(0, 1fr);
-    gap: 1.35rem;
+    gap: 1rem;
     align-items: start;
   }
 
   .date-block {
     position: sticky;
     top: 1rem;
-    padding: 1rem 0;
+    padding: 0.75rem 0;
   }
 
   time {
@@ -165,8 +129,8 @@
   .entry-card {
     position: relative;
     display: grid;
-    gap: 1rem;
-    padding: 1.35rem;
+    gap: 0.85rem;
+    padding: 1rem;
     background: rgba(255, 255, 255, 0.94);
     border: 1px solid rgba(255, 255, 255, 0.65);
     border-radius: 22px;
@@ -188,8 +152,8 @@
 
   .change-section {
     display: grid;
-    gap: 0.75rem;
-    padding: 0.95rem 1rem;
+    gap: 0.6rem;
+    padding: 0.8rem 0.9rem;
     background: #fff;
     border: 1px solid rgba(26, 37, 53, 0.07);
     border-radius: 15px;
@@ -206,7 +170,7 @@
 
   ul {
     display: grid;
-    gap: 0.65rem;
+    gap: 0.5rem;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -216,9 +180,9 @@
     position: relative;
     padding-left: 1.15rem;
     color: #304154;
-    font-size: 0.98rem;
+    font-size: 0.94rem;
     font-weight: 650;
-    line-height: 1.5;
+    line-height: 1.45;
   }
 
   li::before {
@@ -234,7 +198,7 @@
 
   @media (max-width: 720px) {
     .main {
-      padding-top: 2.5rem;
+      padding-top: 2rem;
     }
 
     .entry {

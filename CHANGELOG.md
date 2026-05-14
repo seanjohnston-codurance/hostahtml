@@ -14,6 +14,7 @@ User-facing updates for HostaHTML.
 
 ### Changed
 
+- The changelog navigation now says "What's new?", release notes are more compact, and the signed-in account pill sits out of the way at the bottom right.
 - Single HTML files and zipped page bundles now follow the same sharing flow.
 - Choosing or dropping a file no longer uploads immediately; users now confirm the upload after reviewing the draft setting.
 - Draft watermarks are now lighter, smaller, and tiled so shared page content stays easier to read.

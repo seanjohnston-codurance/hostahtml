@@ -14,7 +14,7 @@ it("hides user chip when email is null", () => {
 
 it("links to the changelog", () => {
   render(SiteHeader, { props: { userEmail: null } });
-  expect(screen.getByRole("link", { name: "Changelog" })).toHaveAttribute(
+  expect(screen.getByRole("link", { name: "What's new?" })).toHaveAttribute(
     "href",
     "/changelog"
   );
@@ -23,7 +23,7 @@ it("links to the changelog", () => {
 it("marks the current page in the navigation", () => {
   render(SiteHeader, { props: { userEmail: null, currentPath: "/changelog" } });
 
-  expect(screen.getByRole("link", { name: "Changelog" })).toHaveAttribute(
+  expect(screen.getByRole("link", { name: "What's new?" })).toHaveAttribute(
     "aria-current",
     "page"
   );

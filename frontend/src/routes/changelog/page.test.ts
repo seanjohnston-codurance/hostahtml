@@ -27,13 +27,11 @@ describe("/changelog", () => {
       },
     });
 
-    expect(screen.getByRole("heading", { name: "Changelog" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Changelog" })).not.toBeInTheDocument();
     expect(screen.getByText("13 May 2026")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Added" })).toBeInTheDocument();
     expect(screen.getByText("Added shorter, cleaner share links.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /back to uploader/i })).toHaveAttribute(
-      "href",
-      "/"
-    );
+    expect(screen.queryByText("User-facing updates for HostaHTML.")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /back to uploader/i })).not.toBeInTheDocument();
   });
 });

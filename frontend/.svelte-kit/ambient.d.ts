@@ -40,13 +40,13 @@
 declare module '$env/static/private' {
 	export const MANPATH: string;
 	export const HOSTAHTML_AUTH: string;
-	export const __MISE_DIFF: string;
 	export const GHOSTTY_RESOURCES_DIR: string;
+	export const __MISE_DIFF: string;
 	export const TERM_PROGRAM: string;
 	export const NODE: string;
 	export const INIT_CWD: string;
-	export const SHELL: string;
 	export const TERM: string;
+	export const SHELL: string;
 	export const TMPDIR: string;
 	export const npm_config_global_prefix: string;
 	export const TERM_PROGRAM_VERSION: string;
@@ -192,13 +192,13 @@ declare module '$env/dynamic/private' {
 	export const env: {
 		MANPATH: string;
 		HOSTAHTML_AUTH: string;
-		__MISE_DIFF: string;
 		GHOSTTY_RESOURCES_DIR: string;
+		__MISE_DIFF: string;
 		TERM_PROGRAM: string;
 		NODE: string;
 		INIT_CWD: string;
-		SHELL: string;
 		TERM: string;
+		SHELL: string;
 		TMPDIR: string;
 		npm_config_global_prefix: string;
 		TERM_PROGRAM_VERSION: string;

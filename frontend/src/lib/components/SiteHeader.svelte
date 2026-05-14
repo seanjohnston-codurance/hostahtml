@@ -38,11 +38,12 @@
         Uploader
       </a>
       <a
+        class="updates-nav-item"
         class:active={currentPath === "/changelog"}
         href="/changelog"
         aria-current={currentPath === "/changelog" ? "page" : undefined}
       >
-        Changelog
+        What's new?
       </a>
     </nav>
 
@@ -131,6 +132,17 @@
     color: #fff;
   }
 
+  .site-nav .updates-nav-item {
+    color: #ffd8c8;
+    background: rgba(232, 89, 26, 0.16);
+    box-shadow: inset 0 0 0 1px rgba(232, 89, 26, 0.32);
+  }
+
+  .site-nav .updates-nav-item:hover {
+    color: #fff;
+    background: rgba(232, 89, 26, 0.26);
+  }
+
   .site-nav a.active {
     background: #fff;
     color: #1a2535;
@@ -140,17 +152,23 @@
   }
 
   .user-chip {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    z-index: 30;
     display: flex;
     align-items: center;
     gap: 0.45rem;
     font-size: 12px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.5);
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(26, 37, 53, 0.78);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 100px;
     padding: 0.375rem 0.9rem;
     letter-spacing: 0.01em;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
   }
 
   @media (max-width: 640px) {
@@ -164,6 +182,14 @@
     .header-actions {
       width: 100%;
       justify-content: space-between;
+    }
+
+    .user-chip {
+      right: 1rem;
+      bottom: 1rem;
+      max-width: calc(100% - 2rem);
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 </style>
