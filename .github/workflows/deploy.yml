@@ -12,6 +12,8 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      GOOGLE_CLIENT_ID: 381362730003-92cflufk1gn78o1ir41t9i2tt97dd26q.apps.googleusercontent.com
     steps:
       - uses: actions/checkout@v4
 
@@ -36,25 +38,22 @@ jobs:
       - name: Check frontend
         env:
           PUBLIC_API_URL: https://example.com
-          PUBLIC_GOOGLE_CLIENT_ID: dummy.apps.googleusercontent.com
+          PUBLIC_AUTH_MODE: google
+          PUBLIC_GOOGLE_CLIENT_ID: ${{ env.GOOGLE_CLIENT_ID }}
         run: npm run check -w frontend
 
       - name: Test infra
         run: npm run test -w infra
 
       - name: Synth infra
-        env:
-          GOOGLE_CLIENT_ID: dummy.apps.googleusercontent.com
         run: npm run infra:synth
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Deploy CDK stack
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
         run: npx cdk deploy --require-approval never --outputs-file /tmp/cdk-outputs.json --context googleClientId="$GOOGLE_CLIENT_ID"
         working-directory: infra
 
@@ -67,7 +66,8 @@ jobs:
       - name: Build frontend
         env:
           PUBLIC_API_URL: ${{ env.API_URL }}
-          PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          PUBLIC_AUTH_MODE: google
+          PUBLIC_GOOGLE_CLIENT_ID: ${{ env.GOOGLE_CLIENT_ID }}
         run: npm run build -w frontend
 
       - name: Sync frontend to S3
