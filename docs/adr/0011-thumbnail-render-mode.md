@@ -1,0 +1,11 @@
+# ADR-0011: Share thumbnails as derived artifacts
+
+HostaHTML thumbnails are derived Share artifacts, not uploaded Bundle files. We will store them beside the Bundle files in the uploads bucket under a reserved path, `{ownerUserId}/{bundleId}/.hostahtml/{bundleId}-thumb.jpg`, while keeping the share record's uploaded `paths` limited to user-provided Bundle files. This keeps lifecycle and delete cleanup close to the Bundle while preserving the domain distinction between uploaded content and generated previews. JPEG is sufficient for dashboard previews and avoids adding image conversion tooling to the browser worker.
+
+Ready thumbnails will be served from a public active-share route, `GET /preview/{token}`, not from `/t/{token}/...` and not from the authenticated owner-management `/shares` API. This keeps thumbnail image loading simple for the dashboard while avoiding collisions with uploaded Bundle paths and keeping the Bundle namespace reserved for user content.
+
+Thumbnails should show the shared page without the draft watermark, but building a separate renderer that serves Bundle files directly from object storage adds more complexity than this first thumbnail slice needs. For now, the thumbnail worker will render the normal share route with a reserved `?thumbnail=1` marker, and the share-serving code will suppress the draft watermark for that render mode.
+
+This deliberately means anyone who already knows a draft Share URL can add `?thumbnail=1` to view the HTML without the draft overlay. We accept that short-term because draft shares are still accessible by design, the draft watermark is presentational rather than an access-control mechanism, thumbnails are an owner-dashboard enhancement, Bundles are immutable, and the simpler route reuses existing Bundle serving for relative assets. Ready thumbnails are one-shot artifacts, but their public route should still use modest private caching so Deleted share cleanup takes effect quickly. Revisit this if draft watermarking becomes a stronger control or if thumbnails need stricter isolation.
+
+Because this renderer loads Bundle assets through the public API, thumbnail generation must stay bounded so an asset-heavy Bundle cannot consume the API's route throttle. The worker should block external requests and enforce a small same-origin request budget during capture.
