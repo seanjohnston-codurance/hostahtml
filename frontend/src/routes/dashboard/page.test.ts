@@ -52,6 +52,15 @@ describe("/dashboard", () => {
     };
   }
 
+  it("warns that the deployment is temporary and not ready for external documents", () => {
+    render(DashboardPage);
+
+    const banner = screen.getByRole("status");
+    expect(banner).toHaveTextContent(/temporary deployment/i);
+    expect(banner).toHaveTextContent(/AWS Playground/i);
+    expect(banner).toHaveTextContent(/not yet ready for external documents/i);
+  });
+
   it("loads active shares and renders newest uploads first", async () => {
     fetchMock.mockResolvedValueOnce(
       sharesResponse([

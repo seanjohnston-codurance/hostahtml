@@ -8,6 +8,7 @@
   import SignInPane from "$lib/components/SignInPane.svelte";
   import SiteFooter from "$lib/components/SiteFooter.svelte";
   import SiteHeader from "$lib/components/SiteHeader.svelte";
+  import TemporaryDeploymentBanner from "$lib/components/TemporaryDeploymentBanner.svelte";
 
   const GOOGLE_BUTTON_ID = "google-signin-btn";
 
@@ -80,6 +81,7 @@
   <span class="bg-glyph" aria-hidden="true">&lt;/&gt;</span>
 
   <SiteHeader userEmail={authState.userEmail} currentPath="/" />
+  <TemporaryDeploymentBanner />
 
   <main class="main">
     {#if !authState.token}
@@ -166,7 +168,7 @@
   .page {
     min-height: 100vh;
     display: grid;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto auto 1fr auto;
     position: relative;
     overflow: hidden;
     background:

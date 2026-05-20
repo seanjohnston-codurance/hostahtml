@@ -1,6 +1,7 @@
 <script lang="ts">
   import SiteFooter from "$lib/components/SiteFooter.svelte";
   import SiteHeader from "$lib/components/SiteHeader.svelte";
+  import TemporaryDeploymentBanner from "$lib/components/TemporaryDeploymentBanner.svelte";
   import type { Changelog } from "$lib/changelog";
 
   let { data }: { data: { changelog: Changelog } } = $props();
@@ -17,6 +18,7 @@
 <div class="page">
   <span class="bg-glyph" aria-hidden="true">log</span>
   <SiteHeader userEmail={null} currentPath="/changelog" />
+  <TemporaryDeploymentBanner />
 
   <main class="main">
     <section class="hero" aria-label="Release notes">
@@ -54,7 +56,7 @@
   .page {
     min-height: 100vh;
     display: grid;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto auto 1fr auto;
     position: relative;
     overflow: hidden;
     background:

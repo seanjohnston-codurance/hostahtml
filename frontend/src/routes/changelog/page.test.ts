@@ -3,6 +3,38 @@ import { describe, expect, it } from "vitest";
 import Page from "./+page.svelte";
 
 describe("/changelog", () => {
+  function changelogProps() {
+    return {
+      data: {
+        changelog: {
+          title: "Changelog",
+          intro: "User-facing updates for HostaHTML.",
+          entries: [
+            {
+              date: "2026-05-13",
+              displayDate: "13 May 2026",
+              sections: [
+                {
+                  heading: "Added",
+                  items: ["Added shorter, cleaner share links."],
+                },
+              ],
+            },
+          ],
+        },
+      },
+    };
+  }
+
+  it("warns that the deployment is temporary and not ready for external documents", () => {
+    render(Page, { props: changelogProps() });
+
+    const banner = screen.getByRole("status");
+    expect(banner).toHaveTextContent(/temporary deployment/i);
+    expect(banner).toHaveTextContent(/AWS Playground/i);
+    expect(banner).toHaveTextContent(/not yet ready for external documents/i);
+  });
+
   it("renders a human-dated changelog entry", () => {
     render(Page, {
       props: {

@@ -1,39 +1,34 @@
 # 06 — Proposal: versioned documents with latest-link forwarding
 
-Status: needs-triage
+Status: wontfix
 
 Suggested model: **Human** — product and security review before implementation.
 
-Type: **Proposal** (no implementation in this issue)
+Type: **Superseded proposal** (no implementation in this issue)
 
 ## Parent
 
 [PRD](../PRD.md) — Future product ideas
 
-Related proposals:
+Superseded by:
 
-- [Versioned files and links](../../versioned-shares/issues/01-versioning-proposal.md)
-- [Stable page link forwards to latest version](../../page-workflow-proposals/issues/05-stable-link-latest-version-proposal.md)
+- [Versioned documents, stable latest links, and replacement](../../versioned-shares/issues/01-versioning-proposal.md)
 
 ## What to build
 
-Explore a versioning model where each document version has a dedicated URL, while a normal shared token resolves to the latest version automatically. The proposal should define the relationship between logical document ids, immutable version ids, public URLs, expiry, auditability, and whether old versions remain available to recipients.
+This future-work note has been folded into the canonical versioning proposal. Dedicated old-version URLs and normal share tokens resolving to the latest version should now be specified there, together with dashboard replacement as version creation.
 
 ## Acceptance criteria
 
-- [ ] Decide whether a share token identifies a logical document, a specific version, or both via different URL shapes.
-- [ ] Define how old-version URLs are created, displayed, shared, expired, and revoked.
-- [ ] Define what "latest" means when a token is forwarded or opened after a replacement.
-- [ ] Document whether recipients can tell they were forwarded to a newer version.
-- [ ] Decide how versioning interacts with tracking, per-recipient links, and open-count limits.
-- [ ] Merge, supersede, or narrow the existing versioned-share proposals before opening implementation tickets.
+- [x] Merge, supersede, or narrow the existing versioned-share proposals before opening implementation tickets.
+- [ ] Remaining product and implementation decisions are tracked by the canonical versioning proposal.
 
 ## Blocked by
 
-- [Versioned files and links](../../versioned-shares/issues/01-versioning-proposal.md)
-- [Stable page link forwards to latest version](../../page-workflow-proposals/issues/05-stable-link-latest-version-proposal.md)
+Superseded by [Versioned documents, stable latest links, and replacement](../../versioned-shares/issues/01-versioning-proposal.md).
 
 ## Comments
 
 - 2026-05-15 — Captured from a future-work idea: version documents, link to previous versions via dedicated URLs, and forward the shared token to the latest version automatically.
+- 2026-05-15 — Superseded by the consolidated versioning proposal.
 

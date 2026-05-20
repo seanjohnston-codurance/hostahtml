@@ -2,6 +2,12 @@
 
 User-facing updates for HostaHTML.
 
+## 2026-05-18
+
+### Added
+
+- Added a persistent banner on the uploader, dashboard, and changelog pages explaining that this is a temporary AWS Playground deployment and is not yet ready for external documents.
+
 ## 2026-05-14
 
 ### Added

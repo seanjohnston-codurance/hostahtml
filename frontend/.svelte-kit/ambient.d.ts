@@ -39,9 +39,8 @@
  */
 declare module '$env/static/private' {
 	export const MANPATH: string;
-	export const HOSTAHTML_AUTH: string;
-	export const __MISE_DIFF: string;
 	export const GHOSTTY_RESOURCES_DIR: string;
+	export const __MISE_DIFF: string;
 	export const TERM_PROGRAM: string;
 	export const NODE: string;
 	export const INIT_CWD: string;
@@ -58,10 +57,11 @@ declare module '$env/static/private' {
 	export const COMMAND_MODE: string;
 	export const npm_config_globalconfig: string;
 	export const SSH_AUTH_SOCK: string;
-	export const __CF_USER_TEXT_ENCODING: string;
 	export const DENO_INSTALL_ROOT: string;
+	export const __CF_USER_TEXT_ENCODING: string;
 	export const npm_execpath: string;
 	export const AWS_PROFILE: string;
+	export const __MISE_SHIM: string;
 	export const PATH: string;
 	export const npm_package_json: string;
 	export const LaunchInstanceID: string;
@@ -75,14 +75,13 @@ declare module '$env/static/private' {
 	export const EDITOR: string;
 	export const npm_package_name: string;
 	export const LANG: string;
-	export const MISE_ENV: string;
 	export const npm_config_npm_version: string;
 	export const XPC_FLAGS: string;
 	export const npm_config_node_gyp: string;
 	export const npm_package_version: string;
 	export const XPC_SERVICE_NAME: string;
-	export const SHLVL: string;
 	export const HOME: string;
+	export const SHLVL: string;
 	export const TERMINFO: string;
 	export const __MISE_ORIG_PATH: string;
 	export const MISE_SHELL: string;
@@ -91,7 +90,6 @@ declare module '$env/static/private' {
 	export const npm_lifecycle_script: string;
 	export const XDG_DATA_DIRS: string;
 	export const GHOSTTY_BIN_DIR: string;
-	export const HOSTAHTML_STORAGE: string;
 	export const npm_config_user_agent: string;
 	export const __MISE_SESSION: string;
 	export const OSLogRateLimit: string;
@@ -191,9 +189,8 @@ declare module '$env/static/public' {
 declare module '$env/dynamic/private' {
 	export const env: {
 		MANPATH: string;
-		HOSTAHTML_AUTH: string;
-		__MISE_DIFF: string;
 		GHOSTTY_RESOURCES_DIR: string;
+		__MISE_DIFF: string;
 		TERM_PROGRAM: string;
 		NODE: string;
 		INIT_CWD: string;
@@ -210,10 +207,11 @@ declare module '$env/dynamic/private' {
 		COMMAND_MODE: string;
 		npm_config_globalconfig: string;
 		SSH_AUTH_SOCK: string;
-		__CF_USER_TEXT_ENCODING: string;
 		DENO_INSTALL_ROOT: string;
+		__CF_USER_TEXT_ENCODING: string;
 		npm_execpath: string;
 		AWS_PROFILE: string;
+		__MISE_SHIM: string;
 		PATH: string;
 		npm_package_json: string;
 		LaunchInstanceID: string;
@@ -227,14 +225,13 @@ declare module '$env/dynamic/private' {
 		EDITOR: string;
 		npm_package_name: string;
 		LANG: string;
-		MISE_ENV: string;
 		npm_config_npm_version: string;
 		XPC_FLAGS: string;
 		npm_config_node_gyp: string;
 		npm_package_version: string;
 		XPC_SERVICE_NAME: string;
-		SHLVL: string;
 		HOME: string;
+		SHLVL: string;
 		TERMINFO: string;
 		__MISE_ORIG_PATH: string;
 		MISE_SHELL: string;
@@ -243,7 +240,6 @@ declare module '$env/dynamic/private' {
 		npm_lifecycle_script: string;
 		XDG_DATA_DIRS: string;
 		GHOSTTY_BIN_DIR: string;
-		HOSTAHTML_STORAGE: string;
 		npm_config_user_agent: string;
 		__MISE_SESSION: string;
 		OSLogRateLimit: string;
